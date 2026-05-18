@@ -136,6 +136,11 @@
       font-size:14px;
       line-height:1.45;
     }
+    .hint{
+      color:var(--sub);
+      font-size:12px;
+      line-height:1.35;
+    }
     button{
       grid-column:1 / -1;
       width:100%;
@@ -244,7 +249,8 @@
 
       <div class="field">
         <label for="telefono">Celular o WhatsApp</label>
-        <input type="tel" id="telefono" name="telefono" inputmode="numeric" autocomplete="tel" pattern="[0-9]{10}" placeholder="Ejemplo: 1234567890" required>
+        <input type="tel" id="telefono" name="telefono" inputmode="tel" autocomplete="tel" pattern="[0-9+() -]{10,20}" placeholder="Ejemplo: 2221234567" required>
+        <span class="hint">Puedes escribir 10 digitos o incluir lada, espacios y guiones.</span>
       </div>
 
       <div class="field field-full">
