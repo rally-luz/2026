@@ -21,6 +21,7 @@ function doPost(e) {
 
     sheet.appendRow(row);
     sendNotification_(data);
+    sendParticipantConfirmation_(data);
 
     return redirect_(THANK_YOU_URL);
   } catch (error) {
@@ -76,8 +77,120 @@ function sendNotification_(data) {
     to: NOTIFY_EMAIL,
     replyTo: data.email || NOTIFY_EMAIL,
     subject,
-    body
+    body,
+    htmlBody: createOrganizerHtml_(data)
   });
+}
+
+function sendParticipantConfirmation_(data) {
+  const email = String(data.email || '').trim();
+  if (!email || !isValidParticipantEmail_(email)) return;
+
+  const subject = 'Registro recibido: Rally por la Luz 2026';
+  const body = [
+    'Hola,',
+    '',
+    'Hemos recibido tu registro para el Rally por la Luz 2026.',
+    '',
+    'Sede: INAOE, Tonantzintla, Puebla',
+    'Fechas: 29 y 30 de septiembre',
+    'Modalidad: presencial',
+    '',
+    'Te contactaremos con mas detalles conforme se acerque la fecha.',
+    '',
+    'Dudas: rallyxlaluz@inaoep.mx',
+    '',
+    'Comite Organizador - Rally por la Luz'
+  ].join('\n');
+
+  MailApp.sendEmail({
+    to: email,
+    replyTo: NOTIFY_EMAIL,
+    name: 'Rally por la Luz',
+    subject,
+    body,
+    htmlBody: createParticipantHtml_(data)
+  });
+}
+
+function createOrganizerHtml_(data) {
+  const rows = [
+    ['Nombre(s)', data.nombre],
+    ['Apellidos', data.apellidos],
+    ['Correo', data.email],
+    ['Celular o WhatsApp', data.telefono],
+    ['Estado', data.estado],
+    ['Institucion', data.institucion],
+    ['Hospedaje', data.hospedaje]
+  ].map(([label, value]) => `
+    <tr>
+      <td style="padding:10px 12px;border-bottom:1px solid #d8e2ea;color:#657486;font-weight:700;">${escapeEmailHtml_(label)}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #d8e2ea;color:#10243f;">${escapeEmailHtml_(value || '')}</td>
+    </tr>
+  `).join('');
+
+  return createEmailShell_({
+    title: 'Nuevo registro',
+    intro: 'Se recibio un nuevo registro para Rally por la Luz 2026.',
+    content: `<table style="width:100%;border-collapse:collapse;border:1px solid #d8e2ea;border-radius:8px;overflow:hidden;">${rows}</table>`
+  });
+}
+
+function createParticipantHtml_(data) {
+  return createEmailShell_({
+    title: 'Registro recibido',
+    intro: `Hola ${escapeEmailHtml_(data.nombre || '')}, hemos recibido tu registro para Rally por la Luz 2026.`,
+    content: `
+      <div style="display:grid;gap:12px;margin:18px 0;">
+        <div style="padding:14px;border:1px solid #d8e2ea;border-radius:8px;background:#ffffff;">
+          <div style="color:#657486;font-size:13px;font-weight:700;">Fechas</div>
+          <div style="margin-top:6px;color:#10243f;font-size:16px;font-weight:800;">29 y 30 de septiembre</div>
+        </div>
+        <div style="padding:14px;border:1px solid #d8e2ea;border-radius:8px;background:#ffffff;">
+          <div style="color:#657486;font-size:13px;font-weight:700;">Sede</div>
+          <div style="margin-top:6px;color:#10243f;font-size:16px;font-weight:800;">INAOE, Tonantzintla, Puebla</div>
+        </div>
+      </div>
+      <div style="margin:18px 0;padding:14px;border-left:4px solid #f6c85f;border-radius:8px;background:#fff8e5;color:#765a12;font-size:14px;line-height:1.5;">
+        Te contactaremos con mas detalles conforme se acerque la fecha.
+      </div>
+      <div style="text-align:center;margin:24px 0 8px;">
+        <a href="https://rally-luz.github.io/2026/" target="_blank" style="display:inline-block;background:linear-gradient(90deg,#00a99d,#10243f);border-radius:8px;padding:13px 18px;color:#ffffff;text-decoration:none;font-weight:800;">Ver sitio del evento</a>
+      </div>
+    `
+  });
+}
+
+function createEmailShell_({ title, intro, content }) {
+  return `
+  <div style="background:#fbfaf7;padding:24px 0;margin:0;">
+    <div style="max-width:640px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;color:#203040;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #d8e2ea;">
+      <div style="background:linear-gradient(135deg,#10243f,#00a99d);padding:24px;text-align:left;color:#ffffff;">
+        <div style="font-size:13px;font-weight:800;text-transform:uppercase;">Rally por la Luz 2026</div>
+        <h1 style="margin:8px 0 0;font-size:26px;line-height:1.2;color:#ffffff;">${escapeEmailHtml_(title)}</h1>
+      </div>
+      <div style="padding:24px;">
+        <p style="margin:0 0 18px;color:#203040;font-size:16px;line-height:1.6;">${intro}</p>
+        ${content}
+        <p style="margin:22px 0 0;color:#203040;font-size:16px;line-height:1.6;">Comite Organizador - Rally por la Luz</p>
+      </div>
+      <div style="background:#f3f4f6;color:#657486;text-align:center;font-size:12px;padding:12px;">Rally por la Luz - INAOE</div>
+    </div>
+  </div>
+  `;
+}
+
+function isValidParticipantEmail_(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+}
+
+function escapeEmailHtml_(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 function redirect_(url) {

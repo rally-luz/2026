@@ -30,3 +30,7 @@ Funciones disponibles:
 - `enviarAvisoATodos()`: plantilla base para editar y mandar un aviso.
 
 Antes de enviar algo real, ejecuta una prueba con pocos correos o revisa el limite diario de Gmail de la cuenta.
+
+## Actualizar cambios
+
+Cada vez que cambies `Code.gs` o `Envios.gs`, copia el contenido actualizado en Apps Script y crea una nueva version del despliegue del Web App para que el sitio use el codigo mas reciente.

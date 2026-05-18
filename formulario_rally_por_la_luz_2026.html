@@ -158,6 +158,7 @@
     }
     button:hover{transform:translateY(-1px); filter:brightness(1.04); box-shadow:0 18px 32px rgba(16,36,63,.24)}
     button:focus-visible{outline:4px solid rgba(246,200,95,.55); outline-offset:3px}
+    button[disabled]{cursor:wait; filter:saturate(.75); opacity:.82}
     .backup-send{
       grid-column:1 / -1;
       display:block;
@@ -336,6 +337,8 @@
 
     const form = document.getElementById('registro-form');
     const mailtoBackup = document.getElementById('mailto-backup');
+    const submitButton = form.querySelector('button[type="submit"]');
+    const thanksUrl = 'gracias.html';
 
     function actualizarCorreoRespaldo() {
       const datos = new FormData(form);
@@ -356,6 +359,30 @@
 
     form.addEventListener('input', actualizarCorreoRespaldo);
     form.addEventListener('change', actualizarCorreoRespaldo);
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      submitButton.disabled = true;
+      submitButton.textContent = 'Enviando...';
+
+      try {
+        await fetch(form.action, {
+          method: 'POST',
+          mode: 'no-cors',
+          body: new URLSearchParams(new FormData(form))
+        });
+        window.location.href = thanksUrl;
+      } catch (error) {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Enviar registro';
+        alert('No se pudo enviar el registro. Intenta de nuevo o usa el respaldo por correo.');
+      }
+    });
     actualizarCorreoRespaldo();
   </script>
 </body>
