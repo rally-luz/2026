@@ -3,101 +3,195 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RALLY POR LA LUZ — 2º Concurso estudiantil de biofotónica</title>
-  <!--
-  <meta name="description" content="RALLY POR LA LUZ — 2º concurso estudiantil de biofotónica en el marco del VIII Seminario Internacional de Ciencias y Tecnologías Biomédicas–PRIS. Organizado por el INAOE en colaboración con la Universidad de Costa Rica." />
-  -->
-  
+  <title>Rally por la Luz 2026</title>
+  <meta name="description" content="Rally por la Luz 2026, concurso estudiantil de biofotonica en el INAOE." />
+  <meta name="theme-color" content="#10243f" />
   <style>
     :root{
-      --bg:#0b172a; --fg:#ffffff; --muted:#c7d2fe;
-      --card:#ffffff; --text:#1f2937; --sub:#6b7280;
-      --pri:#1a73e8; --pri-700:#1557b0; --ring:#93c5fd; --radius:14px;
-      --note-bg:#fff3cd; --note-bd:#ffeeba; --note-tx:#856404;
+      --ink:#10243f;
+      --ink-2:#163b63;
+      --teal:#00a99d;
+      --amber:#f6c85f;
+      --coral:#ef6f6c;
+      --paper:#fbfaf7;
+      --panel:#ffffff;
+      --line:#d8e2ea;
+      --text:#203040;
+      --sub:#657486;
+      --radius:8px;
     }
     *{box-sizing:border-box}
-    html,body{height:100%}
+    html{min-height:100%}
     body{
-      margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      margin:0;
+      min-height:100vh;
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
       color:var(--text);
-      background: radial-gradient(1200px 600px at 10% 0%, #0b172a 0%, #0b172a 30%, #10284d 60%, #0b172a 100%), #0b172a;
+      background:
+        linear-gradient(135deg, rgba(0,169,157,.16) 0 18%, transparent 18% 100%),
+        linear-gradient(315deg, rgba(246,200,95,.18) 0 20%, transparent 20% 100%),
+        var(--paper);
     }
-    .page{display:flex; min-height:100vh; flex-direction:column}
-    .wrap{max-width:980px; margin:0 auto; padding:0 20px}
-
-    /* HERO */
-    header{color:var(--fg); text-align:center; padding:72px 20px 36px}
-    .badge{display:inline-flex; gap:8px; align-items:center; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.25); padding:8px 12px; border-radius:999px; font-weight:600; backdrop-filter:blur(6px)}
-    h1{margin:18px auto 8px; max-width:900px; line-height:1.15; font-size:clamp(28px,4.2vw,46px)}
-    .subtitle{margin:0 auto 22px; max-width:850px; color:var(--muted); font-size:clamp(16px,2.2vw,20px)}
-    .pills{display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin:10px 0 26px}
-    .pill{background:#fff; color:#0b172a; border-radius:999px; padding:10px 14px; font-weight:600; border:2px solid #e5e7eb}
-
-    /* CARD */
-    .card{background:var(--card); border-radius:var(--radius); box-shadow:0 10px 35px rgba(0,0,0,.18); padding:28px; margin:-10px auto 40px}
-    .card p{color:var(--sub); margin:0 0 12px}
-    .list{margin:0 0 8px; padding-left:18px; color:#374151}
-
-    /* Nota */
-    .note{
-      background:var(--note-bg);
-      border:1px solid var(--note-bd);
-      color:var(--note-tx);
-      padding:15px; border-radius:10px;
-      max-width:640px; margin:22px auto;
-      box-shadow:0 4px 12px rgba(0,0,0,0.05);
-      font-size:1rem;
+    .page{min-height:100vh; overflow-x:hidden}
+    .hero{
+      display:grid;
+      grid-template-columns:minmax(280px,.95fr) minmax(320px,1.05fr);
+      min-height:620px;
+      max-width:1180px;
+      margin:0 auto;
+      padding:32px 18px 0;
     }
-    .note ul{margin:10px 0 0; padding-left:20px}
-
-    footer{color:#c7d2fe; text-align:center; font-size:14px; padding:22px 14px 40px}
-    @media (prefers-reduced-motion: reduce){.cta{transition:none}}
+    .event-panel{
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      gap:34px;
+      padding:36px;
+      color:#fff;
+      overflow:hidden;
+      border-radius:8px 0 0 8px;
+      background:
+        linear-gradient(160deg, rgba(239,111,108,.75), transparent 34%),
+        linear-gradient(20deg, rgba(0,169,157,.8), transparent 42%),
+        linear-gradient(135deg, var(--ink), var(--ink-2));
+    }
+    .event-panel::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        repeating-linear-gradient(120deg, rgba(255,255,255,.12) 0 1px, transparent 1px 22px),
+        linear-gradient(90deg, transparent, rgba(255,255,255,.16), transparent);
+      opacity:.58;
+      pointer-events:none;
+    }
+    .event-panel > *{position:relative}
+    .edition{
+      display:inline-flex;
+      width:max-content;
+      padding:8px 12px;
+      border:1px solid rgba(255,255,255,.35);
+      border-radius:999px;
+      background:rgba(255,255,255,.12);
+      font-size:13px;
+      font-weight:800;
+      letter-spacing:0;
+      text-transform:uppercase;
+    }
+    .event-title{margin:24px 0 14px; font-size:58px; line-height:.98; letter-spacing:0}
+    .event-copy{max-width:32rem; color:rgba(255,255,255,.84); font-size:18px; line-height:1.55; overflow-wrap:anywhere}
+    .event-meta{display:grid; gap:12px}
+    .meta-item{display:grid; gap:4px; padding:14px 0; border-top:1px solid rgba(255,255,255,.22)}
+    .meta-label{color:rgba(255,255,255,.66); font-size:12px; font-weight:800; letter-spacing:0; text-transform:uppercase}
+    .meta-value{font-size:16px; font-weight:750}
+    .content-panel{
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:24px;
+      min-width:0;
+      padding:42px;
+      background:var(--panel);
+      border:1px solid rgba(16,36,63,.12);
+      border-left:0;
+      border-radius:0 8px 8px 0;
+      box-shadow:0 24px 60px rgba(16,36,63,.18);
+    }
+    h2{margin:0; color:var(--ink); font-size:34px; line-height:1.12; letter-spacing:0}
+    p{margin:0; color:var(--sub); font-size:16px; line-height:1.65}
+    strong{color:var(--ink)}
+    .facts{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    .fact{
+      min-height:92px;
+      padding:16px;
+      border:1px solid var(--line);
+      border-radius:8px;
+      background:#fff;
+    }
+    .fact span{display:block; color:var(--sub); font-size:13px; font-weight:750}
+    .fact strong{display:block; margin-top:6px; font-size:16px}
+    .closed{
+      padding:14px 16px;
+      border-left:4px solid var(--coral);
+      border-radius:8px;
+      background:#fff0ef;
+      color:#8d302f;
+      font-weight:800;
+      line-height:1.5;
+    }
+    .contact{color:var(--sub); font-size:14px}
+    .contact a{color:var(--ink); font-weight:800}
+    footer{max-width:1180px; margin:0 auto; padding:18px; color:var(--sub); font-size:14px}
+    @media (max-width:860px){
+      body{overflow-x:hidden}
+      .hero{grid-template-columns:minmax(0,1fr); width:100vw; max-width:100vw; padding:0; overflow-x:hidden}
+      .event-panel{width:100%; max-width:100vw; border-radius:0; padding:28px 22px; overflow:hidden}
+      .event-title{font-size:40px}
+      .event-copy{max-width:min(330px, calc(100vw - 44px)); font-size:16px}
+      .event-meta{grid-template-columns:1fr 1fr}
+      .content-panel{width:100%; max-width:100vw; border:0; border-radius:0; padding:30px 22px; overflow:hidden; box-shadow:none}
+      .content-panel p, .closed, .contact{max-width:min(346px, calc(100vw - 44px)); overflow-wrap:anywhere}
+      h2{font-size:28px}
+    }
+    @media (max-width:560px){
+      .event-meta,.facts{grid-template-columns:1fr}
+    }
   </style>
 </head>
 <body>
   <div class="page">
-    <header>
-      <div class="wrap">
-        <span class="badge">Concurso estudiantil • Biofotónica</span>
-        <h1>RALLY POR LA LUZ</h1>
-         <!--
-        <p class="subtitle">2º concurso para fomentar el conocimiento en el área de biofotónica, en el marco del VIII Seminario Internacional de Ciencias y Tecnologías Biomédicas – PRIS. Organizado por el <strong>INAOE</strong> en colaboración con la <strong>Universidad de Costa Rica</strong>.</p>
-        -->
-        <div class="pills">
-          <span class="pill">Fechas: 29 y 30 de septiembre</span>
-          <span class="pill">Sede: INAOE, Tonantzintla, Puebla (MX)</span>
-          <span class="pill">Modalidad presencial</span>
+    <main class="hero">
+      <section class="event-panel" aria-label="Rally por la Luz 2026">
+        <div>
+          <span class="edition">Edicion 2026</span>
+          <h1 class="event-title">Rally por la Luz</h1>
+          <p class="event-copy">Concurso estudiantil de biofotonica con retos, aprendizaje aplicado y actividades presenciales en el INAOE.</p>
         </div>
-      </div>
-    </header>
 
-    <main class="wrap card">
-      <p>Este concurso está dirigido <strong>únicamente a estudiantes universitarios</strong> que estén cursando una <strong>Licenciatura</strong> o <strong>Ingeniería</strong> en áreas relacionadas con la biofotónica. Los participantes tendrán la oportunidad de aprender y poner en práctica sus conocimientos a través de retos y actividades dinámicas durante el evento.</p>
+        <div class="event-meta">
+          <div class="meta-item">
+            <span class="meta-label">Fechas</span>
+            <span class="meta-value">29 y 30 de septiembre</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Sede</span>
+            <span class="meta-value">INAOE, Tonantzintla</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Modalidad</span>
+            <span class="meta-value">Presencial</span>
+          </div>
+        </div>
+      </section>
 
-      <p>La participación es <strong>gratuita</strong>, con cupo limitado. Se ofrece hospedaje para participantes de fuera de la zona conurbada de Puebla, sujeto a disponibilidad y aprobación del comité organizador.</p>
+      <section class="content-panel">
+        <div>
+          <h2>Registro cerrado</h2>
+          <p>La convocatoria de registro no esta disponible en este momento. Conservamos la informacion principal del evento para consulta.</p>
+        </div>
 
-      <p>Para dudas, escribe a: <a href="mailto:rallyxlaluz@inaoep.mx">rallyxlaluz@inaoep.mx</a></p>
+        <div class="facts" aria-label="Datos principales">
+          <div class="fact">
+            <span>Cupo</span>
+            <strong>Limitado</strong>
+          </div>
+          <div class="fact">
+            <span>Hospedaje</span>
+            <strong>Sujeto a disponibilidad</strong>
+          </div>
+        </div>
 
-      <!-- Nota importante -->
-      <div class="note" role="note" aria-label="Recomendaciones para participantes">
-        <strong>Nota para los participantes:</strong>
-        <ul>
-          <li>Traer <strong>ropa y calzado cómodos</strong> (hay actividades al aire libre).</li>
-          <li>Llevar <strong>agua o botella reutilizable</strong> para mantenerse hidratados.</li>
-          <li>Usar <strong>protección solar</strong> (gorra/sombrero y bloqueador).</li>
-        </ul>
-      </div>
+        <p>Este concurso esta dirigido a estudiantes universitarios de licenciatura o ingenieria en areas relacionadas con la biofotonica.</p>
 
-      <!-- Registro cerrado -->
-      <p style="margin-top:18px; font-weight:bold; color:#b91c1c; text-align:center; font-size:1.2rem;">
-        🚫 Registro cerrado
-      </p>
+        <p class="closed">Registro cerrado</p>
+
+        <p class="contact">Dudas: <a href="mailto:rallyxlaluz@inaoep.mx">rallyxlaluz@inaoep.mx</a></p>
+      </section>
     </main>
 
     <footer>
-      <div class="wrap">
-        <p>© <span id="y"></span> Rally por la Luz • INAOE </p>
-      </div>
+      <p>&copy; <span id="y"></span> Rally por la Luz - INAOE</p>
     </footer>
   </div>
 
