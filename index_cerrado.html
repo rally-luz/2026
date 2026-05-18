@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RALLY POR LA LUZ — 2º Concurso estudiantil de biofotónica</title>
+  <!--
+  <meta name="description" content="RALLY POR LA LUZ — 2º concurso estudiantil de biofotónica en el marco del VIII Seminario Internacional de Ciencias y Tecnologías Biomédicas–PRIS. Organizado por el INAOE en colaboración con la Universidad de Costa Rica." />
+  -->
+  
+  <style>
+    :root{
+      --bg:#0b172a; --fg:#ffffff; --muted:#c7d2fe;
+      --card:#ffffff; --text:#1f2937; --sub:#6b7280;
+      --pri:#1a73e8; --pri-700:#1557b0; --ring:#93c5fd; --radius:14px;
+      --note-bg:#fff3cd; --note-bd:#ffeeba; --note-tx:#856404;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      color:var(--text);
+      background: radial-gradient(1200px 600px at 10% 0%, #0b172a 0%, #0b172a 30%, #10284d 60%, #0b172a 100%), #0b172a;
+    }
+    .page{display:flex; min-height:100vh; flex-direction:column}
+    .wrap{max-width:980px; margin:0 auto; padding:0 20px}
+
+    /* HERO */
+    header{color:var(--fg); text-align:center; padding:72px 20px 36px}
+    .badge{display:inline-flex; gap:8px; align-items:center; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.25); padding:8px 12px; border-radius:999px; font-weight:600; backdrop-filter:blur(6px)}
+    h1{margin:18px auto 8px; max-width:900px; line-height:1.15; font-size:clamp(28px,4.2vw,46px)}
+    .subtitle{margin:0 auto 22px; max-width:850px; color:var(--muted); font-size:clamp(16px,2.2vw,20px)}
+    .pills{display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin:10px 0 26px}
+    .pill{background:#fff; color:#0b172a; border-radius:999px; padding:10px 14px; font-weight:600; border:2px solid #e5e7eb}
+
+    /* CARD */
+    .card{background:var(--card); border-radius:var(--radius); box-shadow:0 10px 35px rgba(0,0,0,.18); padding:28px; margin:-10px auto 40px}
+    .card p{color:var(--sub); margin:0 0 12px}
+    .list{margin:0 0 8px; padding-left:18px; color:#374151}
+
+    /* Nota */
+    .note{
+      background:var(--note-bg);
+      border:1px solid var(--note-bd);
+      color:var(--note-tx);
+      padding:15px; border-radius:10px;
+      max-width:640px; margin:22px auto;
+      box-shadow:0 4px 12px rgba(0,0,0,0.05);
+      font-size:1rem;
+    }
+    .note ul{margin:10px 0 0; padding-left:20px}
+
+    footer{color:#c7d2fe; text-align:center; font-size:14px; padding:22px 14px 40px}
+    @media (prefers-reduced-motion: reduce){.cta{transition:none}}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="wrap">
+        <span class="badge">Concurso estudiantil • Biofotónica</span>
+        <h1>RALLY POR LA LUZ</h1>
+         <!--
+        <p class="subtitle">2º concurso para fomentar el conocimiento en el área de biofotónica, en el marco del VIII Seminario Internacional de Ciencias y Tecnologías Biomédicas – PRIS. Organizado por el <strong>INAOE</strong> en colaboración con la <strong>Universidad de Costa Rica</strong>.</p>
+        -->
+        <div class="pills">
+          <span class="pill">Fechas: 29 y 30 de septiembre</span>
+          <span class="pill">Sede: INAOE, Tonantzintla, Puebla (MX)</span>
+          <span class="pill">Modalidad presencial</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap card">
+      <p>Este concurso está dirigido <strong>únicamente a estudiantes universitarios</strong> que estén cursando una <strong>Licenciatura</strong> o <strong>Ingeniería</strong> en áreas relacionadas con la biofotónica. Los participantes tendrán la oportunidad de aprender y poner en práctica sus conocimientos a través de retos y actividades dinámicas durante el evento.</p>
+
+      <p>La participación es <strong>gratuita</strong>, con cupo limitado. Se ofrece hospedaje para participantes de fuera de la zona conurbada de Puebla, sujeto a disponibilidad y aprobación del comité organizador.</p>
+
+      <p>Para dudas, escribe a: <a href="mailto:rallyxlaluz@inaoep.mx">rallyxlaluz@inaoep.mx</a></p>
+
+      <!-- Nota importante -->
+      <div class="note" role="note" aria-label="Recomendaciones para participantes">
+        <strong>Nota para los participantes:</strong>
+        <ul>
+          <li>Traer <strong>ropa y calzado cómodos</strong> (hay actividades al aire libre).</li>
+          <li>Llevar <strong>agua o botella reutilizable</strong> para mantenerse hidratados.</li>
+          <li>Usar <strong>protección solar</strong> (gorra/sombrero y bloqueador).</li>
+        </ul>
+      </div>
+
+      <!-- Registro cerrado -->
+      <p style="margin-top:18px; font-weight:bold; color:#b91c1c; text-align:center; font-size:1.2rem;">
+        🚫 Registro cerrado
+      </p>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <p>© <span id="y"></span> Rally por la Luz • INAOE </p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
