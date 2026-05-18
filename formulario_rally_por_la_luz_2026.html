@@ -158,6 +158,19 @@
     }
     button:hover{transform:translateY(-1px); filter:brightness(1.04); box-shadow:0 18px 32px rgba(16,36,63,.24)}
     button:focus-visible{outline:4px solid rgba(246,200,95,.55); outline-offset:3px}
+    .backup-send{
+      grid-column:1 / -1;
+      display:block;
+      padding:13px 14px;
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      background:#fff;
+      color:var(--ink);
+      font-size:14px;
+      line-height:1.45;
+      text-align:center;
+    }
+    .backup-send a{color:var(--ink); font-weight:850}
     #hospedaje-instruction{
       display:none;
       grid-column:1 / -1;
@@ -220,7 +233,7 @@
       <h1>Formulario de registro</h1>
       <p class="welcome">Completa tus datos para participar en el Rally por la Luz 2026. Recibirás confirmación por correo.</p>
 
-      <form action="https://formsubmit.co/anyel.garcia@inaoe.mx"
+      <form id="registro-form" action="https://formsubmit.co/anyel.garcia@inaoe.mx"
           method="POST"
           accept-charset="UTF-8"
           enctype="application/x-www-form-urlencoded">
@@ -314,6 +327,10 @@
       </p>
 
       <button type="submit">Enviar registro</button>
+      <p class="backup-send">
+        Si el envio no responde, usa el respaldo:
+        <a id="mailto-backup" href="mailto:anyel.garcia@inaoe.mx?subject=Registro%20Rally%20por%20la%20Luz%202026">Enviar por correo</a>
+      </p>
     </form>
     </section>
   </main>
@@ -324,6 +341,30 @@
       const instruccion = document.getElementById('hospedaje-instruction');
       instruccion.style.display = (hospedaje === 'Sí') ? 'block' : 'none';
     }
+
+    const form = document.getElementById('registro-form');
+    const mailtoBackup = document.getElementById('mailto-backup');
+
+    function actualizarCorreoRespaldo() {
+      const datos = new FormData(form);
+      const cuerpo = [
+        'Registro Rally por la Luz 2026',
+        '',
+        `Nombre(s): ${datos.get('nombre') || ''}`,
+        `Apellidos: ${datos.get('apellidos') || ''}`,
+        `Correo electronico: ${datos.get('email') || ''}`,
+        `Celular o WhatsApp: ${datos.get('telefono') || ''}`,
+        `Estado: ${datos.get('estado') || ''}`,
+        `Institucion: ${datos.get('institucion') || ''}`,
+        `Necesita hospedaje: ${datos.get('hospedaje') || ''}`
+      ].join('\n');
+
+      mailtoBackup.href = `mailto:anyel.garcia@inaoe.mx?subject=${encodeURIComponent('Registro Rally por la Luz 2026')}&body=${encodeURIComponent(cuerpo)}`;
+    }
+
+    form.addEventListener('input', actualizarCorreoRespaldo);
+    form.addEventListener('change', actualizarCorreoRespaldo);
+    actualizarCorreoRespaldo();
   </script>
 </body>
 </html>
