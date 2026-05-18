@@ -12,7 +12,9 @@ const REGISTRATION_HEADERS = [
   'Hospedaje',
   'Token',
   'Confirmacion asistencia',
-  'Fecha confirmacion'
+  'Fecha confirmacion',
+  'Correo confirmacion',
+  'Error correo confirmacion'
 ];
 
 function doPost(e) {
@@ -37,8 +39,9 @@ function doPost(e) {
     };
 
     sheet.appendRow(buildRow_(sheet, rowData));
+    const rowNumber = sheet.getLastRow();
     sendNotification_(data);
-    sendParticipantConfirmation_(data);
+    sendParticipantConfirmation_(data, sheet, rowNumber);
 
     return redirect_(THANK_YOU_URL);
   } catch (error) {
@@ -191,9 +194,12 @@ function sendNotification_(data) {
   });
 }
 
-function sendParticipantConfirmation_(data) {
+function sendParticipantConfirmation_(data, sheet, rowNumber) {
   const email = String(data.email || '').trim();
-  if (!email || !isValidParticipantEmail_(email)) return;
+  if (!email || !isValidParticipantEmail_(email)) {
+    markParticipantEmailStatus_(sheet, rowNumber, 'No enviado', 'Correo invalido o vacio');
+    return;
+  }
 
   const subject = 'Registro recibido: Rally por la Luz 2026';
   const body = [
@@ -212,14 +218,38 @@ function sendParticipantConfirmation_(data) {
     'Comite Organizador - Rally por la Luz'
   ].join('\n');
 
-  MailApp.sendEmail({
-    to: email,
-    replyTo: NOTIFY_EMAIL,
-    name: 'Rally por la Luz',
-    subject,
-    body,
-    htmlBody: createParticipantHtml_(data)
-  });
+  try {
+    MailApp.sendEmail({
+      to: email,
+      bcc: NOTIFY_EMAIL,
+      replyTo: NOTIFY_EMAIL,
+      name: 'Rally por la Luz',
+      subject,
+      body,
+      htmlBody: createParticipantHtml_(data)
+    });
+    markParticipantEmailStatus_(sheet, rowNumber, 'Enviado', '');
+  } catch (error) {
+    markParticipantEmailStatus_(
+      sheet,
+      rowNumber,
+      'Error',
+      String(error && error.message ? error.message : error)
+    );
+    throw error;
+  }
+}
+
+function markParticipantEmailStatus_(sheet, rowNumber, status, errorMessage) {
+  if (!sheet || !rowNumber) return;
+
+  ensureHeaders_(sheet);
+  const headers = getHeaders_(sheet);
+  const idxStatus = headers.indexOf('Correo confirmacion');
+  const idxError = headers.indexOf('Error correo confirmacion');
+
+  if (idxStatus >= 0) sheet.getRange(rowNumber, idxStatus + 1).setValue(status);
+  if (idxError >= 0) sheet.getRange(rowNumber, idxError + 1).setValue(errorMessage || '');
 }
 
 function createOrganizerHtml_(data) {

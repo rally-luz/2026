@@ -37,6 +37,11 @@ Las respuestas de asistencia se guardan en las columnas:
 - `Confirmacion asistencia`
 - `Fecha confirmacion`
 
+El envio del correo automatico al participante se registra en:
+
+- `Correo confirmacion`
+- `Error correo confirmacion`
+
 ## Actualizar cambios
 
 Cada vez que cambies `Code.gs` o `Envios.gs`, copia el contenido actualizado en Apps Script y crea una nueva version del despliegue del Web App para que el sitio use el codigo mas reciente.
