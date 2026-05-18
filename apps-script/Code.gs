@@ -1,6 +1,19 @@
 const SHEET_NAME = 'Registros';
 const NOTIFY_EMAIL = 'anyel.garcia@inaoe.mx';
 const THANK_YOU_URL = 'https://rally-luz.github.io/2026/gracias.html';
+const REGISTRATION_HEADERS = [
+  'Fecha',
+  'Nombre(s)',
+  'Apellidos',
+  'Correo',
+  'Telefono',
+  'Estado',
+  'Institucion',
+  'Hospedaje',
+  'Token',
+  'Confirmacion asistencia',
+  'Fecha confirmacion'
+];
 
 function doPost(e) {
   try {
@@ -8,18 +21,22 @@ function doPost(e) {
     const sheet = getSheet_();
     ensureHeaders_(sheet);
 
-    const row = [
-      new Date(),
-      data.nombre || '',
-      data.apellidos || '',
-      data.email || '',
-      data.telefono || '',
-      data.estado || '',
-      data.institucion || '',
-      data.hospedaje || ''
-    ];
+    const token = Utilities.getUuid();
+    const rowData = {
+      'Fecha': new Date(),
+      'Nombre(s)': data.nombre || '',
+      'Apellidos': data.apellidos || '',
+      'Correo': data.email || '',
+      'Telefono': data.telefono || '',
+      'Estado': data.estado || '',
+      'Institucion': data.institucion || '',
+      'Hospedaje': data.hospedaje || '',
+      'Token': token,
+      'Confirmacion asistencia': '',
+      'Fecha confirmacion': ''
+    };
 
-    sheet.appendRow(row);
+    sheet.appendRow(buildRow_(sheet, rowData));
     sendNotification_(data);
     sendParticipantConfirmation_(data);
 
@@ -39,24 +56,116 @@ function doPost(e) {
   }
 }
 
+function doGet(e) {
+  const params = e.parameter || {};
+
+  if (params.action === 'asistencia') {
+    return handleAttendanceConfirmation_(params);
+  }
+
+  return HtmlService.createHtmlOutput('Rally por la Luz 2026');
+}
+
 function getSheet_() {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   return spreadsheet.getSheetByName(SHEET_NAME) || spreadsheet.insertSheet(SHEET_NAME);
 }
 
 function ensureHeaders_(sheet) {
-  if (sheet.getLastRow() > 0) return;
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(REGISTRATION_HEADERS);
+    return;
+  }
 
-  sheet.appendRow([
-    'Fecha',
-    'Nombre(s)',
-    'Apellidos',
-    'Correo',
-    'Telefono',
-    'Estado',
-    'Institucion',
-    'Hospedaje'
-  ]);
+  const headers = getHeaders_(sheet);
+  const missing = REGISTRATION_HEADERS.filter(header => !headers.includes(header));
+
+  if (missing.length > 0) {
+    sheet.getRange(1, headers.length + 1, 1, missing.length).setValues([missing]);
+  }
+}
+
+function getHeaders_(sheet) {
+  return sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(String);
+}
+
+function buildRow_(sheet, rowData) {
+  return getHeaders_(sheet).map(header => rowData[header] || '');
+}
+
+function handleAttendanceConfirmation_(params) {
+  const token = String(params.token || '').trim();
+  const response = normalizeAttendanceResponse_(params.respuesta);
+
+  if (!token || !response) {
+    return createAttendancePage_('No pudimos registrar tu respuesta', 'El enlace no contiene una respuesta valida. Por favor responde el correo si necesitas ayuda.');
+  }
+
+  const sheet = getSheet_();
+  ensureHeaders_(sheet);
+  const headers = getHeaders_(sheet);
+  const idxToken = headers.indexOf('Token');
+  const idxResponse = headers.indexOf('Confirmacion asistencia');
+  const idxDate = headers.indexOf('Fecha confirmacion');
+
+  if (idxToken < 0 || idxResponse < 0 || idxDate < 0) {
+    return createAttendancePage_('No pudimos registrar tu respuesta', 'La hoja no tiene las columnas de confirmacion listas.');
+  }
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) {
+    return createAttendancePage_('No encontramos tu registro', 'Por favor responde el correo para confirmar tu asistencia.');
+  }
+
+  const tokens = sheet.getRange(2, idxToken + 1, lastRow - 1, 1).getValues();
+  const matchIndex = tokens.findIndex(row => String(row[0] || '').trim() === token);
+
+  if (matchIndex < 0) {
+    return createAttendancePage_('No encontramos tu registro', 'Por favor responde el correo para confirmar tu asistencia.');
+  }
+
+  const rowNumber = matchIndex + 2;
+  sheet.getRange(rowNumber, idxResponse + 1).setValue(response);
+  sheet.getRange(rowNumber, idxDate + 1).setValue(new Date());
+
+  const title = response === 'Si asistire' ? 'Asistencia confirmada' : 'Respuesta registrada';
+  const message = response === 'Si asistire'
+    ? 'Gracias por confirmar que asistirás al Rally por la Luz 2026.'
+    : 'Gracias por avisarnos que no podrás asistir. Nos ayudas mucho con la logística.';
+
+  return createAttendancePage_(title, message);
+}
+
+function normalizeAttendanceResponse_(value) {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (normalized === 'si') return 'Si asistire';
+  if (normalized === 'no') return 'No asistire';
+  return '';
+}
+
+function createAttendancePage_(title, message) {
+  return HtmlService.createHtmlOutput(`
+    <!doctype html>
+    <html lang="es">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>${escapeEmailHtml_(title)}</title>
+      </head>
+      <body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#fbfaf7;font-family:Arial,Helvetica,sans-serif;color:#203040;padding:24px;">
+        <main style="max-width:640px;border:1px solid #d8e2ea;border-radius:8px;background:#ffffff;overflow:hidden;box-shadow:0 24px 60px rgba(16,36,63,.14);">
+          <section style="background:linear-gradient(135deg,#10243f,#00a99d);padding:24px;color:#ffffff;">
+            <div style="font-size:13px;font-weight:800;text-transform:uppercase;">Rally por la Luz 2026</div>
+            <h1 style="margin:8px 0 0;font-size:28px;line-height:1.2;">${escapeEmailHtml_(title)}</h1>
+          </section>
+          <section style="padding:24px;">
+            <p style="margin:0 0 18px;font-size:16px;line-height:1.6;">${escapeEmailHtml_(message)}</p>
+            <a href="https://rally-luz.github.io/2026/" style="display:inline-block;background:linear-gradient(90deg,#00a99d,#10243f);border-radius:8px;padding:13px 18px;color:#ffffff;text-decoration:none;font-weight:800;">Volver al sitio</a>
+          </section>
+        </main>
+      </body>
+    </html>
+  `);
 }
 
 function sendNotification_(data) {

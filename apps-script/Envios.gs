@@ -4,6 +4,7 @@ const MASS_BCC_BATCH_SIZE = 80;
 const MASS_BATCH_DELAY_MS = 1200;
 const MASS_SENDER_NAME = 'Rally por la Luz';
 const EVENT_URL = 'https://rally-luz.github.io/2026/';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzaGEFpN2IGYZ04T9NKQMknfuslO-0QrsAyGrmnu01vJIsr_fSiGD_KuxKr5VG4Rdax/exec';
 
 /**
  * Ejecuta esta funcion para enviar un recordatorio general a todos los registros.
@@ -80,6 +81,58 @@ function enviarAvisoATodos() {
   enviarMasivo_({ subject, textBody, htmlBody });
 }
 
+/**
+ * Envia un correo individual con botones unicos para confirmar asistencia.
+ * Usa enlaces personalizados, por eso NO se envia por BCC.
+ */
+function enviarConfirmacionAsistenciaATodos() {
+  const participantes = cargarParticipantesConToken_();
+
+  if (participantes.length === 0) {
+    console.warn('[asistencia] No hay participantes con email valido.');
+    return;
+  }
+
+  console.log(`[asistencia] Total destinatarios: ${participantes.length}`);
+
+  participantes.forEach((participante, index) => {
+    const yesUrl = crearUrlAsistencia_(participante.token, 'si');
+    const noUrl = crearUrlAsistencia_(participante.token, 'no');
+    const subject = '[Rally por la Luz 2026] Confirma tu asistencia';
+    const textBody = [
+      `Hola ${participante.nombre || ''},`,
+      '',
+      'Sabemos que existen situaciones no previstas y emergencias.',
+      'Para manejar mejor la logistica del evento, por favor confirma si asistiras o si no podras asistir.',
+      '',
+      `Si asistire: ${yesUrl}`,
+      `No asistire: ${noUrl}`,
+      '',
+      'Gracias por ayudarnos a organizar mejor el Rally por la Luz 2026.',
+      '',
+      'Comite Organizador - Rally por la Luz'
+    ].join('\n');
+
+    const htmlBody = crearHtmlConfirmacionAsistencia_(participante, yesUrl, noUrl);
+
+    GmailApp.sendEmail(
+      participante.email,
+      subject,
+      textBody,
+      {
+        name: MASS_SENDER_NAME,
+        replyTo: NOTIFY_EMAIL,
+        htmlBody
+      }
+    );
+
+    console.log(`[asistencia] Enviado ${index + 1} / ${participantes.length}: ${participante.email}`);
+    Utilities.sleep(MASS_BATCH_DELAY_MS);
+  });
+
+  console.log('[asistencia] Envio de confirmacion completado.');
+}
+
 function enviarMasivo_({ subject, textBody, htmlBody }) {
   const recipients = cargarParticipantes_();
 
@@ -133,6 +186,52 @@ function cargarParticipantes_() {
   return Array.from(emails);
 }
 
+function cargarParticipantesConToken_() {
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sh) throw new Error(`No existe la pestana "${SHEET_NAME}".`);
+
+  ensureHeaders_(sh);
+
+  const dataRange = sh.getDataRange();
+  const data = dataRange.getValues();
+  const header = data.shift() || [];
+  const idxEmail = findHeaderIndex_(header, ['Correo', 'email', 'Email', 'Correo electronico']);
+  const idxNombre = findHeaderIndex_(header, ['Nombre(s)', 'Nombre', 'nombre']);
+  const idxApellidos = findHeaderIndex_(header, ['Apellidos', 'apellidos']);
+  const idxToken = findHeaderIndex_(header, ['Token']);
+
+  if (idxEmail < 0) {
+    throw new Error('No encuentro columna de correo. Usa encabezado "Correo" o "email".');
+  }
+  if (idxToken < 0) {
+    throw new Error('No encuentro columna "Token".');
+  }
+
+  const seen = new Set();
+  const participantes = [];
+
+  data.forEach((row, index) => {
+    const email = String(row[idxEmail] || '').trim().toLowerCase();
+    if (!isValidEmail_(email) || seen.has(email)) return;
+
+    let token = String(row[idxToken] || '').trim();
+    if (!token) {
+      token = Utilities.getUuid();
+      sh.getRange(index + 2, idxToken + 1).setValue(token);
+    }
+
+    seen.add(email);
+    participantes.push({
+      email,
+      token,
+      nombre: idxNombre >= 0 ? String(row[idxNombre] || '').trim() : '',
+      apellidos: idxApellidos >= 0 ? String(row[idxApellidos] || '').trim() : ''
+    });
+  });
+
+  return participantes;
+}
+
 function findHeaderIndex_(header, names) {
   const normalized = header.map(value => normalizeHeader_(value));
   const targets = names.map(value => normalizeHeader_(value));
@@ -173,6 +272,36 @@ function crearHtmlAviso_({ titulo, subtitulo, intro, bloques, nota, cta, url }) 
         <div style="margin:18px 0;padding:14px;border-left:4px solid #f6c85f;border-radius:8px;background:#fff8e5;color:#765a12;font-size:14px;line-height:1.5;">${escapeHtml_(nota)}</div>
         <div style="text-align:center;margin:24px 0 8px;">
           <a href="${escapeHtml_(url)}" target="_blank" style="display:inline-block;background:linear-gradient(90deg,#00a99d,#10243f);border-radius:8px;padding:13px 18px;color:#ffffff;text-decoration:none;font-weight:800;">${escapeHtml_(cta)}</a>
+        </div>
+        <p style="margin:22px 0 0;color:#203040;font-size:16px;line-height:1.6;">Comite Organizador - Rally por la Luz</p>
+      </div>
+      <div style="background:#f3f4f6;color:#657486;text-align:center;font-size:12px;padding:12px;">Rally por la Luz - INAOE</div>
+    </div>
+  </div>
+  `;
+}
+
+function crearUrlAsistencia_(token, respuesta) {
+  return `${WEB_APP_URL}?action=asistencia&token=${encodeURIComponent(token)}&respuesta=${encodeURIComponent(respuesta)}`;
+}
+
+function crearHtmlConfirmacionAsistencia_(participante, yesUrl, noUrl) {
+  const nombre = participante.nombre ? ` ${escapeHtml_(participante.nombre)}` : '';
+
+  return `
+  <div style="background:#fbfaf7;padding:24px 0;margin:0;">
+    <div style="max-width:640px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;color:#203040;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #d8e2ea;">
+      <div style="background:linear-gradient(135deg,#10243f,#00a99d);padding:24px;text-align:left;color:#ffffff;">
+        <div style="font-size:13px;font-weight:800;text-transform:uppercase;">Rally por la Luz 2026</div>
+        <h1 style="margin:8px 0 0;font-size:26px;line-height:1.2;color:#ffffff;">Confirma tu asistencia</h1>
+      </div>
+      <div style="padding:24px;">
+        <p style="margin:0 0 16px;color:#203040;font-size:16px;line-height:1.6;">Hola${nombre},</p>
+        <p style="margin:0 0 18px;color:#203040;font-size:16px;line-height:1.6;">Sabemos que existen situaciones no previstas y emergencias. Para manejar mejor la logistica del evento, por favor confirma si asistiras o si no podras asistir.</p>
+        <div style="margin:18px 0;padding:14px;border-left:4px solid #f6c85f;border-radius:8px;background:#fff8e5;color:#765a12;font-size:14px;line-height:1.5;">Tu respuesta nos ayuda muchisimo a preparar accesos, materiales y cupos.</div>
+        <div style="text-align:center;margin:24px 0 10px;">
+          <a href="${escapeHtml_(yesUrl)}" target="_blank" style="display:inline-block;margin:6px;background:linear-gradient(90deg,#00a99d,#10243f);border-radius:8px;padding:13px 18px;color:#ffffff;text-decoration:none;font-weight:800;">Si asistire</a>
+          <a href="${escapeHtml_(noUrl)}" target="_blank" style="display:inline-block;margin:6px;background:#fff0ef;border:1px solid #ef6f6c;border-radius:8px;padding:13px 18px;color:#8d302f;text-decoration:none;font-weight:800;">No asistire</a>
         </div>
         <p style="margin:22px 0 0;color:#203040;font-size:16px;line-height:1.6;">Comite Organizador - Rally por la Luz</p>
       </div>

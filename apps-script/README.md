@@ -28,8 +28,14 @@ Funciones disponibles:
 
 - `enviarRecordatorioATodos()`: plantilla de recordatorio 2026.
 - `enviarAvisoATodos()`: plantilla base para editar y mandar un aviso.
+- `enviarConfirmacionAsistenciaATodos()`: envia correos individuales con botones para confirmar si asistiran o no.
 
 Antes de enviar algo real, ejecuta una prueba con pocos correos o revisa el limite diario de Gmail de la cuenta.
+
+Las respuestas de asistencia se guardan en las columnas:
+
+- `Confirmacion asistencia`
+- `Fecha confirmacion`
 
 ## Actualizar cambios
 
