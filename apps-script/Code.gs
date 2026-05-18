@@ -1,6 +1,7 @@
 const SHEET_NAME = 'Registros';
 const NOTIFY_EMAIL = 'anyel.garcia@inaoe.mx';
 const THANK_YOU_URL = 'https://rally-luz.github.io/2026/gracias.html';
+
 const REGISTRATION_HEADERS = [
   'Fecha',
   'Nombre(s)',
@@ -19,11 +20,13 @@ const REGISTRATION_HEADERS = [
 
 function doPost(e) {
   try {
-    const data = e.parameter || {};
+    const data = getPostData_(e);
+
     const sheet = getSheet_();
     ensureHeaders_(sheet);
 
     const token = Utilities.getUuid();
+
     const rowData = {
       'Fecha': new Date(),
       'Nombre(s)': data.nombre || '',
@@ -35,15 +38,19 @@ function doPost(e) {
       'Hospedaje': data.hospedaje || '',
       'Token': token,
       'Confirmacion asistencia': '',
-      'Fecha confirmacion': ''
+      'Fecha confirmacion': '',
+      'Correo confirmacion': '',
+      'Error correo confirmacion': ''
     };
 
     sheet.appendRow(buildRow_(sheet, rowData));
     const rowNumber = sheet.getLastRow();
+
     sendNotification_(data);
     sendParticipantConfirmation_(data, sheet, rowNumber);
 
     return redirect_(THANK_YOU_URL);
+
   } catch (error) {
     MailApp.sendEmail({
       to: NOTIFY_EMAIL,
@@ -59,8 +66,28 @@ function doPost(e) {
   }
 }
 
+function getPostData_(e) {
+  if (!e) {
+    throw new Error('doPost fue ejecutado sin evento. No lo ejecutes manualmente desde Apps Script; debe llamarse desde el formulario o Web App.');
+  }
+
+  if (e.parameter && Object.keys(e.parameter).length > 0) {
+    return e.parameter;
+  }
+
+  if (e.postData && e.postData.contents) {
+    try {
+      return JSON.parse(e.postData.contents);
+    } catch (error) {
+      throw new Error('No se pudo leer el cuerpo POST como JSON.');
+    }
+  }
+
+  return {};
+}
+
 function doGet(e) {
-  const params = e.parameter || {};
+  const params = e && e.parameter ? e.parameter : {};
 
   if (params.action === 'asistencia') {
     return handleAttendanceConfirmation_(params);
@@ -101,38 +128,56 @@ function handleAttendanceConfirmation_(params) {
   const response = normalizeAttendanceResponse_(params.respuesta);
 
   if (!token || !response) {
-    return createAttendancePage_('No pudimos registrar tu respuesta', 'El enlace no contiene una respuesta valida. Por favor responde el correo si necesitas ayuda.');
+    return createAttendancePage_(
+      'No pudimos registrar tu respuesta',
+      'El enlace no contiene una respuesta válida. Por favor responde el correo si necesitas ayuda.'
+    );
   }
 
   const sheet = getSheet_();
   ensureHeaders_(sheet);
+
   const headers = getHeaders_(sheet);
   const idxToken = headers.indexOf('Token');
   const idxResponse = headers.indexOf('Confirmacion asistencia');
   const idxDate = headers.indexOf('Fecha confirmacion');
 
   if (idxToken < 0 || idxResponse < 0 || idxDate < 0) {
-    return createAttendancePage_('No pudimos registrar tu respuesta', 'La hoja no tiene las columnas de confirmacion listas.');
+    return createAttendancePage_(
+      'No pudimos registrar tu respuesta',
+      'La hoja no tiene las columnas de confirmación listas.'
+    );
   }
 
   const lastRow = sheet.getLastRow();
+
   if (lastRow < 2) {
-    return createAttendancePage_('No encontramos tu registro', 'Por favor responde el correo para confirmar tu asistencia.');
+    return createAttendancePage_(
+      'No encontramos tu registro',
+      'Por favor responde el correo para confirmar tu asistencia.'
+    );
   }
 
   const tokens = sheet.getRange(2, idxToken + 1, lastRow - 1, 1).getValues();
   const matchIndex = tokens.findIndex(row => String(row[0] || '').trim() === token);
 
   if (matchIndex < 0) {
-    return createAttendancePage_('No encontramos tu registro', 'Por favor responde el correo para confirmar tu asistencia.');
+    return createAttendancePage_(
+      'No encontramos tu registro',
+      'Por favor responde el correo para confirmar tu asistencia.'
+    );
   }
 
   const rowNumber = matchIndex + 2;
+
   sheet.getRange(rowNumber, idxResponse + 1).setValue(response);
   sheet.getRange(rowNumber, idxDate + 1).setValue(new Date());
 
-  const title = response === 'Si asistire' ? 'Asistencia confirmada' : 'Respuesta registrada';
-  const message = response === 'Si asistire'
+  const title = response === 'Sí asistiré'
+    ? 'Asistencia confirmada'
+    : 'Respuesta registrada';
+
+  const message = response === 'Sí asistiré'
     ? 'Gracias por confirmar que asistirás al Rally por la Luz 2026.'
     : 'Gracias por avisarnos que no podrás asistir. Nos ayudas mucho con la logística.';
 
@@ -141,8 +186,10 @@ function handleAttendanceConfirmation_(params) {
 
 function normalizeAttendanceResponse_(value) {
   const normalized = String(value || '').trim().toLowerCase();
-  if (normalized === 'si') return 'Si asistire';
-  if (normalized === 'no') return 'No asistire';
+
+  if (normalized === 'si' || normalized === 'sí') return 'Sí asistiré';
+  if (normalized === 'no') return 'No asistiré';
+
   return '';
 }
 
@@ -173,15 +220,16 @@ function createAttendancePage_(title, message) {
 
 function sendNotification_(data) {
   const subject = 'Nuevo registro: Rally por la Luz 2026';
+
   const body = [
     'Nuevo registro para Rally por la Luz 2026',
     '',
     `Nombre(s): ${data.nombre || ''}`,
     `Apellidos: ${data.apellidos || ''}`,
-    `Correo electronico: ${data.email || ''}`,
+    `Correo electrónico: ${data.email || ''}`,
     `Celular o WhatsApp: ${data.telefono || ''}`,
     `Estado: ${data.estado || ''}`,
-    `Institucion: ${data.institucion || ''}`,
+    `Institución: ${data.institucion || ''}`,
     `Necesita hospedaje: ${data.hospedaje || ''}`
   ].join('\n');
 
@@ -196,14 +244,16 @@ function sendNotification_(data) {
 
 function sendParticipantConfirmation_(data, sheet, rowNumber) {
   const email = String(data.email || '').trim();
+
   if (!email || !isValidParticipantEmail_(email)) {
-    markParticipantEmailStatus_(sheet, rowNumber, 'No enviado', 'Correo invalido o vacio');
+    markParticipantEmailStatus_(sheet, rowNumber, 'No enviado', 'Correo inválido o vacío');
     return;
   }
 
   const subject = 'Registro recibido: Rally por la Luz 2026';
+
   const body = [
-    'Hola,',
+    `Hola ${data.nombre || ''},`,
     '',
     'Hemos recibido tu registro para el Rally por la Luz 2026.',
     '',
@@ -211,11 +261,11 @@ function sendParticipantConfirmation_(data, sheet, rowNumber) {
     'Fechas: 29 y 30 de septiembre',
     'Modalidad: presencial',
     '',
-    'Te contactaremos con mas detalles conforme se acerque la fecha.',
+    'Te contactaremos con más detalles conforme se acerque la fecha.',
     '',
-    'Dudas: rallyxlaluz@inaoep.mx',
+    'Dudas: rallyxlaluz@inaoe.mx',
     '',
-    'Comite Organizador - Rally por la Luz'
+    'Comité Organizador - Rally por la Luz'
   ].join('\n');
 
   try {
@@ -228,7 +278,9 @@ function sendParticipantConfirmation_(data, sheet, rowNumber) {
       body,
       htmlBody: createParticipantHtml_(data)
     });
+
     markParticipantEmailStatus_(sheet, rowNumber, 'Enviado', '');
+
   } catch (error) {
     markParticipantEmailStatus_(
       sheet,
@@ -236,6 +288,7 @@ function sendParticipantConfirmation_(data, sheet, rowNumber) {
       'Error',
       String(error && error.message ? error.message : error)
     );
+
     throw error;
   }
 }
@@ -244,12 +297,18 @@ function markParticipantEmailStatus_(sheet, rowNumber, status, errorMessage) {
   if (!sheet || !rowNumber) return;
 
   ensureHeaders_(sheet);
+
   const headers = getHeaders_(sheet);
   const idxStatus = headers.indexOf('Correo confirmacion');
   const idxError = headers.indexOf('Error correo confirmacion');
 
-  if (idxStatus >= 0) sheet.getRange(rowNumber, idxStatus + 1).setValue(status);
-  if (idxError >= 0) sheet.getRange(rowNumber, idxError + 1).setValue(errorMessage || '');
+  if (idxStatus >= 0) {
+    sheet.getRange(rowNumber, idxStatus + 1).setValue(status);
+  }
+
+  if (idxError >= 0) {
+    sheet.getRange(rowNumber, idxError + 1).setValue(errorMessage || '');
+  }
 }
 
 function createOrganizerHtml_(data) {
@@ -259,7 +318,7 @@ function createOrganizerHtml_(data) {
     ['Correo', data.email],
     ['Celular o WhatsApp', data.telefono],
     ['Estado', data.estado],
-    ['Institucion', data.institucion],
+    ['Institución', data.institucion],
     ['Hospedaje', data.hospedaje]
   ].map(([label, value]) => `
     <tr>
@@ -270,7 +329,7 @@ function createOrganizerHtml_(data) {
 
   return createEmailShell_({
     title: 'Nuevo registro',
-    intro: 'Se recibio un nuevo registro para Rally por la Luz 2026.',
+    intro: 'Se recibió un nuevo registro para Rally por la Luz 2026.',
     content: `<table style="width:100%;border-collapse:collapse;border:1px solid #d8e2ea;border-radius:8px;overflow:hidden;">${rows}</table>`
   });
 }
@@ -290,9 +349,11 @@ function createParticipantHtml_(data) {
           <div style="margin-top:6px;color:#10243f;font-size:16px;font-weight:800;">INAOE, Tonantzintla, Puebla</div>
         </div>
       </div>
+
       <div style="margin:18px 0;padding:14px;border-left:4px solid #f6c85f;border-radius:8px;background:#fff8e5;color:#765a12;font-size:14px;line-height:1.5;">
-        Te contactaremos con mas detalles conforme se acerque la fecha.
+        Te contactaremos con más detalles conforme se acerque la fecha.
       </div>
+
       <div style="text-align:center;margin:24px 0 8px;">
         <a href="https://rally-luz.github.io/2026/" target="_blank" style="display:inline-block;background:linear-gradient(90deg,#00a99d,#10243f);border-radius:8px;padding:13px 18px;color:#ffffff;text-decoration:none;font-weight:800;">Ver sitio del evento</a>
       </div>
@@ -302,20 +363,22 @@ function createParticipantHtml_(data) {
 
 function createEmailShell_({ title, intro, content }) {
   return `
-  <div style="background:#fbfaf7;padding:24px 0;margin:0;">
-    <div style="max-width:640px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;color:#203040;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #d8e2ea;">
-      <div style="background:linear-gradient(135deg,#10243f,#00a99d);padding:24px;text-align:left;color:#ffffff;">
-        <div style="font-size:13px;font-weight:800;text-transform:uppercase;">Rally por la Luz 2026</div>
-        <h1 style="margin:8px 0 0;font-size:26px;line-height:1.2;color:#ffffff;">${escapeEmailHtml_(title)}</h1>
+    <div style="background:#fbfaf7;padding:24px 0;margin:0;">
+      <div style="max-width:640px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;color:#203040;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #d8e2ea;">
+        <div style="background:linear-gradient(135deg,#10243f,#00a99d);padding:24px;text-align:left;color:#ffffff;">
+          <div style="font-size:13px;font-weight:800;text-transform:uppercase;">Rally por la Luz 2026</div>
+          <h1 style="margin:8px 0 0;font-size:26px;line-height:1.2;color:#ffffff;">${escapeEmailHtml_(title)}</h1>
+        </div>
+
+        <div style="padding:24px;">
+          <p style="margin:0 0 18px;color:#203040;font-size:16px;line-height:1.6;">${intro}</p>
+          ${content}
+          <p style="margin:22px 0 0;color:#203040;font-size:16px;line-height:1.6;">Comité Organizador - Rally por la Luz</p>
+        </div>
+
+        <div style="background:#f3f4f6;color:#657486;text-align:center;font-size:12px;padding:12px;">Rally por la Luz - INAOE</div>
       </div>
-      <div style="padding:24px;">
-        <p style="margin:0 0 18px;color:#203040;font-size:16px;line-height:1.6;">${intro}</p>
-        ${content}
-        <p style="margin:22px 0 0;color:#203040;font-size:16px;line-height:1.6;">Comite Organizador - Rally por la Luz</p>
-      </div>
-      <div style="background:#f3f4f6;color:#657486;text-align:center;font-size:12px;padding:12px;">Rally por la Luz - INAOE</div>
     </div>
-  </div>
   `;
 }
 
@@ -340,4 +403,18 @@ function redirect_(url) {
     JSON.stringify(url) +
     ';</script></body></html>'
   );
+}
+
+function testDoPost_() {
+  doPost({
+    parameter: {
+      nombre: 'Prueba',
+      apellidos: 'Estudiante',
+      email: 'correo@ejemplo.com',
+      telefono: '2221234567',
+      estado: 'Puebla',
+      institucion: 'INAOE',
+      hospedaje: 'No'
+    }
+  });
 }
