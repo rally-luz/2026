@@ -284,11 +284,26 @@ Error correo confirmacion
 
 `Envios.gs` se ejecuta manualmente desde Apps Script. No manda todo junto: cada funcion es independiente.
 
+Este archivo sirve para comunicarse con participantes que ya estan registrados en la hoja `Registros`.
+
 ```js
 enviarAvisoATodos()
 ```
 
 Manda un aviso general editable.
+
+Se usa cuando hay que comunicar cualquier informacion no programada, por ejemplo:
+
+- Cambio de horario.
+- Indicaciones de llegada.
+- Aviso de documentos/materiales.
+- Mensaje general del comite organizador.
+
+Antes de ejecutarla, se edita dentro de la funcion:
+
+- `subject`
+- `textBody`
+- `htmlBody`
 
 ```js
 enviarRecordatorioATodos()
@@ -296,13 +311,83 @@ enviarRecordatorioATodos()
 
 Manda un recordatorio general del evento.
 
+Se usa para recordar datos principales:
+
+- Sede.
+- Fechas.
+- Modalidad.
+- Recomendaciones generales.
+- Enlace al sitio del evento.
+
+Normalmente se ejecuta dias antes del evento.
+
 ```js
 enviarConfirmacionAsistenciaATodos()
 ```
 
 Manda correos individuales para confirmar asistencia. Cada participante recibe enlaces/botones propios.
 
+Esta funcion no usa BCC porque cada participante necesita enlaces personalizados.
+
+El correo incluye botones como:
+
+- `Si asistire`
+- `No asistire`
+
+Cuando la persona confirma, la respuesta queda registrada en Sheets.
+
 Antes de enviar a todos, se recomienda probar con 1 o 2 correos.
+
+Funciones internas importantes:
+
+```js
+enviarMasivo_({ subject, textBody, htmlBody })
+```
+
+Helper interno que manda correos por lotes usando BCC. Lo usan `enviarAvisoATodos()` y `enviarRecordatorioATodos()`.
+
+```js
+cargarParticipantes_()
+```
+
+Lee la hoja `Registros`, busca la columna de correo, valida emails y elimina duplicados.
+
+```js
+cargarParticipantesConToken_()
+```
+
+Lee participantes con correo valido y token. Si alguien no tiene token, genera uno y lo guarda en la hoja.
+
+```js
+crearHtmlAviso2026_(...)
+```
+
+Construye el correo HTML con el estilo visual 2026.
+
+```js
+crearHtmlConfirmacionAsistencia_(participante, yesUrl, noUrl)
+```
+
+Construye el correo HTML de confirmacion de asistencia con botones personalizados.
+
+```js
+findHeaderIndex_(header, names)
+normalizeHeader_(value)
+```
+
+Permiten encontrar columnas aunque el encabezado tenga mayusculas, minusculas o acentos distintos.
+
+```js
+isValidEmail_(value)
+```
+
+Valida que el correo tenga formato basico correcto.
+
+```js
+escapeHtml_(value)
+```
+
+Escapa texto antes de insertarlo en HTML para evitar romper el correo si algun nombre contiene caracteres especiales.
 
 ## 13. Triggers
 
