@@ -50,6 +50,12 @@
     }
     .note ul{margin:10px 0 0; padding-left:20px}
 
+    .cta{display:inline-block; padding:14px 22px; border-radius:12px; text-decoration:none;
+      background:linear-gradient(180deg,var(--pri),var(--pri-700)); color:#fff; font-weight:700;
+      box-shadow:0 10px 30px rgba(26,115,232,.35); transition:transform .12s ease, filter .12s ease}
+    .cta:hover{transform:translateY(-1px); filter:brightness(1.05)}
+    .cta:focus{outline:3px solid var(--ring); outline-offset:3px}
+
     footer{color:#c7d2fe; text-align:center; font-size:14px; padding:22px 14px 40px}
     @media (prefers-reduced-motion: reduce){.cta{transition:none}}
   </style>
@@ -88,9 +94,8 @@
         </ul>
       </div>
 
-      <!-- Registro cerrado -->
-      <p style="margin-top:18px; font-weight:bold; color:#b91c1c; text-align:center; font-size:1.2rem;">
-        🚫 Registro cerrado
+      <p style="margin-top:18px">
+        <a class="cta" href="formulario_rally_por_la_luz_2026.html">Inscribirme</a>
       </p>
     </main>
 
