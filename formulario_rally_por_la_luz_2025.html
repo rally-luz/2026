@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulario — Rally por la Luz 2025</title>
+  <style>
+    :root{
+      --bg:#0b172a; --fg:#ffffff; --muted:#c7d2fe;
+      --card:#ffffff; --text:#1f2937; --sub:#6b7280;
+      --pri:#1a73e8; --pri-700:#1557b0; --ring:#93c5fd; --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 10% 0%, #0b172a 0%, #0b172a 30%, #10284d 60%, #0b172a 100%), #0b172a;
+      color:var(--text);
+      display:flex; justify-content:center; align-items:center; min-height:100vh; padding:20px;
+    }
+    .form-container{
+      background:var(--card);
+      padding:30px;
+      border-radius:var(--radius);
+      box-shadow:0 10px 35px rgba(0,0,0,.18);
+      max-width:600px;
+      width:100%;
+    }
+    h1{text-align:center; color:var(--pri); margin-bottom:8px}
+    .welcome{text-align:center; color:var(--sub); margin-bottom:20px}
+    label{display:block; margin:10px 0 5px; color:var(--text); font-weight:500}
+    input, select{
+      width:100%; padding:10px; margin-bottom:15px;
+      border:1px solid #ccc; border-radius:8px; box-sizing:border-box;
+      font-size:16px;
+    }
+    button{
+      width:100%; padding:14px; border:none; border-radius:12px;
+      background:linear-gradient(180deg,var(--pri),var(--pri-700));
+      color:#fff; font-weight:700; font-size:16px;
+      cursor:pointer; box-shadow:0 10px 30px rgba(26,115,232,.35);
+      transition: transform .12s ease, filter .12s ease;
+    }
+    button:hover{transform:translateY(-1px); filter:brightness(1.05)}
+    #hospedaje-instruction{display:none; color:#d32f2f; margin-top:10px}
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h1>Rally por la Luz 2025</h1>
+    <p class="welcome">Completa el formulario para registrarte. Recibirás confirmación por correo.</p>
+
+    <form action="https://formsubmit.co/anyel.garcia@inaoe.mx"
+          method="POST"
+          accept-charset="UTF-8"
+          enctype="application/x-www-form-urlencoded">
+      <!-- Opciones ocultas -->
+      <input type="hidden" name="_captcha" value="false"> 
+      <input type="hidden" name="_subject" value="Nuevo registro: Rally por la Luz 2025">
+      <!-- Redirección a página propia de gracias (URL absoluta con /2025/) -->
+      <input type="hidden" name="_next" value="https://rally-luz.github.io/2025/gracias.html">
+      <!-- Autorespuesta al participante       
+      <input type="hidden" name="_autoresponse" value="¡Gracias por registrarte en el Rally por la Luz! Hemos recibido tu información. Te contactaremos con detalles logísticos cuando se acerque la fecha.">
+      -->
+      <label for="nombre">Nombre(s):</label>
+      <input type="text" id="nombre" name="nombre" required>
+
+      <label for="apellidos">Apellidos:</label>
+      <input type="text" id="apellidos" name="apellidos" required>
+
+      <label for="correo">Correo electrónico:</label>
+      <input type="email" id="correo" name="email" required>
+
+      <label for="telefono">Número de celular o WhatsApp:</label>
+      <input type="tel" id="telefono" name="telefono" pattern="[0-9]{10}" placeholder="Ejemplo: 1234567890" required>
+
+      <label for="estado">¿Desde qué estado nos visita?</label>
+      <select id="estado" name="estado" required>
+        <option value="" disabled selected>Seleccione un estado</option>
+        <option value="Aguascalientes">Aguascalientes</option>
+        <option value="Baja California">Baja California</option>
+        <option value="Baja California Sur">Baja California Sur</option>
+        <option value="Campeche">Campeche</option>
+        <option value="Chiapas">Chiapas</option>
+        <option value="Chihuahua">Chihuahua</option>
+        <option value="Ciudad de México">Ciudad de México</option>
+        <option value="Coahuila">Coahuila</option>
+        <option value="Colima">Colima</option>
+        <option value="Durango">Durango</option>
+        <option value="Estado de México">Estado de México</option>
+        <option value="Guanajuato">Guanajuato</option>
+        <option value="Guerrero">Guerrero</option>
+        <option value="Hidalgo">Hidalgo</option>
+        <option value="Jalisco">Jalisco</option>
+        <option value="Michoacán">Michoacán</option>
+        <option value="Morelos">Morelos</option>
+        <option value="Nayarit">Nayarit</option>
+        <option value="Nuevo León">Nuevo León</option>
+        <option value="Oaxaca">Oaxaca</option>
+        <option value="Puebla">Puebla</option>
+        <option value="Querétaro">Querétaro</option>
+        <option value="Quintana Roo">Quintana Roo</option>
+        <option value="San Luis Potosí">San Luis Potosí</option>
+        <option value="Sinaloa">Sinaloa</option>
+        <option value="Sonora">Sonora</option>
+        <option value="Tabasco">Tabasco</option>
+        <option value="Tamaulipas">Tamaulipas</option>
+        <option value="Tlaxcala">Tlaxcala</option>
+        <option value="Veracruz">Veracruz</option>
+        <option value="Yucatán">Yucatán</option>
+        <option value="Zacatecas">Zacatecas</option>
+      </select>
+
+      <label for="institucion">¿A qué institución pertenece?</label>
+      <input type="text" id="institucion" name="institucion" required>
+      
+      <label for="hospedaje">¿Necesita hospedaje? (solo aplica si viene de fuera de la ciudad de Puebla)</label>
+      <select id="hospedaje" name="hospedaje" required onchange="mostrarInstruccionHospedaje()">
+        <option value="" disabled selected>Seleccione una opción</option>
+        <option value="No">No</option>
+        <option value="Sí">Sí</option>
+      </select>
+
+      <p id="hospedaje-instruction">
+        Si necesita hospedaje, por favor envíe un correo a 
+        <a href="mailto:mayfesm@inaoep.mx">mayfesm@inaoep.mx</a> con su solicitud.
+      </p>
+
+      <button type="submit">Enviar registro</button>
+    </form>
+  </div>
+
+  <script>
+    function mostrarInstruccionHospedaje() {
+      const hospedaje = document.getElementById('hospedaje').value;
+      const instruccion = document.getElementById('hospedaje-instruction');
+      instruccion.style.display = (hospedaje === 'Sí') ? 'block' : 'none';
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

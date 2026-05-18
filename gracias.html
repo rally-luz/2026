@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>¡Gracias por registrarte!</title>
+  <style>
+    :root{ --bg:#0b172a; --fg:#ffffff; --muted:#c7d2fe; --card:#ffffff; --text:#1f2937; --sub:#6b7280; --pri:#1a73e8; --pri-700:#1557b0; --ring:#93c5fd; --radius:14px; }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+      background: radial-gradient(1200px 600px at 10% 0%, #0b172a 0%, #0b172a 30%, #10284d 60%, #0b172a 100%), #0b172a;
+      color:var(--text); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
+    }
+    .card{ background:var(--card); border-radius:var(--radius); box-shadow:0 10px 35px rgba(0,0,0,.18); max-width:720px; width:100%; padding:32px; text-align:center; }
+    h1{ color:var(--pri); margin:0 0 10px }
+    p{ color:var(--sub); margin: 0 0 16px }
+    .cta{
+      display:inline-block; margin-top:8px; padding:14px 22px; border-radius:12px; text-decoration:none;
+      background:linear-gradient(180deg,var(--pri),var(--pri-700)); color:#fff; font-weight:700;
+      box-shadow:0 10px 30px rgba(26,115,232,.35); transition:transform .12s ease, filter .12s ease;
+    }
+    .cta:hover{ transform:translateY(-1px); filter:brightness(1.05) }
+  </style>
+</head>
+<body>
+  <main class="card" role="main">
+    <h1>¡Registro enviado!</h1>
+    <p>Hemos recibido tu información para el <strong>Rally por la Luz</strong>.</p>
+    <p>En máximo 30 minutos te llegará un correo de confirmación a la dirección que registraste (En caso de que no te llegue contactanos).</p>
+    <a class="cta" href="./index.html">Volver al inicio</a>
+  </main>
+</body>
+</html>
+
+
+
