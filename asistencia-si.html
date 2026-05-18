@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Asistencia confirmada</title>
+</head>
+<body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#f4f7fb;font-family:Arial,Helvetica,sans-serif;padding:24px;">
+
+  <main style="width:100%;max-width:680px;background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #d8e2ea;box-shadow:0 20px 60px rgba(16,36,63,.15);">
+    <section style="background:linear-gradient(135deg,#10243f,#00a99d);padding:32px;color:#ffffff;">
+      <div style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;">
+        Rally por la Luz 2026
+      </div>
+      <h1 style="margin:12px 0 0;font-size:34px;line-height:1.2;color:#ffffff;">
+        ¡Gracias por confirmar!
+      </h1>
+    </section>
+
+    <section style="padding:32px;">
+      <p style="margin:0;color:#203040;font-size:18px;line-height:1.7;">
+        Tu asistencia al Rally por la Luz 2026 ha sido confirmada. Muy pronto recibirás más información del evento.
+      </p>
+
+      <div style="text-align:center;margin-top:34px;">
+        <a href="https://ccc.inaoep.mx/~seminario-biomedicas/RallyXLu.html" style="display:inline-block;background:linear-gradient(90deg,#00a99d,#10243f);color:#ffffff;text-decoration:none;padding:15px 24px;border-radius:10px;font-weight:800;font-size:15px;">
+          Volver al sitio del evento
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzaGEFpN2IGYZ04T9NKQMknfuslO-0QrsAyGrmnu01vJIsr_fSiGD_KuxKr5VG4Rdax/exec';
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    if (token) {
+      const img = new Image();
+      img.src = WEB_APP_URL +
+        '?action=asistencia' +
+        '&respuesta=si' +
+        '&token=' + encodeURIComponent(token) +
+        '&t=' + Date.now();
+    }
+  </script>
+
+</body>
+</html>
