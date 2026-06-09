@@ -84,3 +84,43 @@ probarTelegram()
 ```
 
 Si todo esta bien, llegara un mensaje de prueba al chat configurado.
+
+### Comandos de Telegram
+
+Tambien puedes usar el bot para pedir reportes desde Telegram. Primero configura:
+
+```text
+TELEGRAM_BOT_TOKEN
+TELEGRAM_CHAT_ID
+```
+
+Para obtener el `TELEGRAM_CHAT_ID`:
+
+1. Guarda solo `TELEGRAM_BOT_TOKEN`.
+2. Escribe `/id` al bot.
+3. Copia el numero que responde.
+4. Guardalo como `TELEGRAM_CHAT_ID`.
+
+Despues de desplegar el Web App, ejecuta una vez:
+
+```js
+configurarTelegramWebhook()
+```
+
+Con eso el bot escuchara comandos. Comandos disponibles:
+
+- `/hospedaje`: envia un CSV con los registros que solicitaron hospedaje.
+- `/confirmados`: envia un CSV con quienes confirmaron que si asistiran.
+- `/no_asisten`: envia un CSV con quienes confirmaron que no asistiran.
+- `/pendientes`: envia un CSV con registros sin confirmacion de asistencia.
+- `/resumen`: muestra totales rapidos.
+- `/ayuda`: muestra la lista de comandos.
+- `/id`: muestra el chat id.
+
+Los CSV incluyen una columna `WhatsApp`. El enlace se arma con los ultimos 10 digitos del telefono registrado y se le antepone `52`, para evitar duplicar lada cuando alguien escriba `52`, `+52`, espacios o guiones.
+
+Si necesitas desactivar los comandos del bot, ejecuta:
+
+```js
+borrarTelegramWebhook()
+```

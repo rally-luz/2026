@@ -31,6 +31,11 @@ function doPost(e) {
   try {
     const data = getPostData_(e);
 
+    if (isTelegramUpdate_(data)) {
+      handleTelegramUpdate_(data);
+      return ContentService.createTextOutput('ok');
+    }
+
     const sheet = getSheet_();
     ensureHeaders_(sheet);
 
@@ -62,6 +67,7 @@ function doPost(e) {
       `Nombre: ${data.nombre || ''} ${data.apellidos || ''}`.trim(),
       `Correo: ${data.email || ''}`,
       `Telefono: ${data.telefono || ''}`,
+      `WhatsApp: ${createWhatsappUrl_(data.telefono) || 'Sin telefono valido'}`,
       `Estado: ${data.estado || ''}`,
       `Institucion: ${data.institucion || ''}`,
       `Hospedaje: ${data.hospedaje || ''}`,
@@ -374,16 +380,53 @@ function probarTelegram() {
   notifyTelegram_('Prueba Telegram Rally por la Luz 2026: conexion correcta.');
 }
 
+function configurarTelegramWebhook() {
+  const config = getTelegramConfig_();
+  if (!config.token) throw new Error('Falta TELEGRAM_BOT_TOKEN en Script properties.');
+
+  const url = ScriptApp.getService().getUrl();
+  if (!url) throw new Error('No se encontro la URL del Web App. Despliega el script primero.');
+
+  const response = UrlFetchApp.fetch(`https://api.telegram.org/bot${config.token}/setWebhook`, {
+    method: 'post',
+    muteHttpExceptions: true,
+    payload: { url }
+  });
+
+  console.log(response.getContentText());
+  return response.getContentText();
+}
+
+function borrarTelegramWebhook() {
+  const config = getTelegramConfig_();
+  if (!config.token) throw new Error('Falta TELEGRAM_BOT_TOKEN en Script properties.');
+
+  const response = UrlFetchApp.fetch(`https://api.telegram.org/bot${config.token}/deleteWebhook`, {
+    method: 'post',
+    muteHttpExceptions: true
+  });
+
+  console.log(response.getContentText());
+  return response.getContentText();
+}
+
 function notifyTelegram_(message) {
   const config = getTelegramConfig_();
   if (!config.token || !config.chatId) return;
+
+  sendTelegramMessageToChat_(config.chatId, message);
+}
+
+function sendTelegramMessageToChat_(chatId, message) {
+  const config = getTelegramConfig_();
+  if (!config.token || !chatId) return;
 
   try {
     UrlFetchApp.fetch(`https://api.telegram.org/bot${config.token}/sendMessage`, {
       method: 'post',
       muteHttpExceptions: true,
       payload: {
-        chat_id: config.chatId,
+        chat_id: chatId,
         text: String(message || '').slice(0, 3900),
         disable_web_page_preview: true
       }
@@ -391,6 +434,214 @@ function notifyTelegram_(message) {
   } catch (error) {
     console.warn(`No se pudo enviar alerta Telegram: ${error}`);
   }
+}
+
+function sendTelegramDocumentToChat_(chatId, blob, caption) {
+  const config = getTelegramConfig_();
+  if (!config.token || !chatId || !blob) return;
+
+  try {
+    UrlFetchApp.fetch(`https://api.telegram.org/bot${config.token}/sendDocument`, {
+      method: 'post',
+      muteHttpExceptions: true,
+      payload: {
+        chat_id: chatId,
+        caption: String(caption || '').slice(0, 900),
+        document: blob
+      }
+    });
+  } catch (error) {
+    console.warn(`No se pudo enviar documento Telegram: ${error}`);
+  }
+}
+
+function isTelegramUpdate_(data) {
+  return Boolean(data && (data.message || data.edited_message || data.callback_query));
+}
+
+function handleTelegramUpdate_(update) {
+  const message = update.message || update.edited_message || {};
+  const chat = message.chat || {};
+  const chatId = String(chat.id || '').trim();
+  const text = String(message.text || '').trim();
+  const command = text.split(/\s+/)[0].split('@')[0].toLowerCase();
+  const config = getTelegramConfig_();
+
+  if (!chatId || !command) return;
+
+  if (command === '/id') {
+    sendTelegramMessageToChat_(chatId, `Chat ID: ${chatId}`);
+    return;
+  }
+
+  if (!config.chatId) {
+    sendTelegramMessageToChat_(chatId, 'Falta configurar TELEGRAM_CHAT_ID en Script properties. Usa /id para obtenerlo.');
+    return;
+  }
+
+  if (chatId !== String(config.chatId)) return;
+
+  if (command === '/ayuda' || command === '/start') {
+    sendTelegramMessageToChat_(chatId, [
+      'Comandos Rally por la Luz 2026',
+      '/hospedaje - CSV de registros que solicitaron hospedaje',
+      '/confirmados - CSV de quienes confirmaron que si asistiran',
+      '/no_asisten - CSV de quienes confirmaron que no asistiran',
+      '/pendientes - CSV de registros sin confirmacion de asistencia',
+      '/resumen - Totales rapidos',
+      '/id - Muestra el chat id'
+    ].join('\n'));
+    return;
+  }
+
+  if (command === '/hospedaje') {
+    sendTelegramCsvReport_(chatId, 'hospedaje');
+    return;
+  }
+
+  if (command === '/confirmados') {
+    sendTelegramCsvReport_(chatId, 'confirmados');
+    return;
+  }
+
+  if (command === '/no_asisten') {
+    sendTelegramCsvReport_(chatId, 'no_asisten');
+    return;
+  }
+
+  if (command === '/pendientes') {
+    sendTelegramCsvReport_(chatId, 'pendientes');
+    return;
+  }
+
+  if (command === '/resumen') {
+    sendTelegramMessageToChat_(chatId, buildTelegramSummary_());
+    return;
+  }
+
+  sendTelegramMessageToChat_(chatId, 'Comando no reconocido. Usa /ayuda.');
+}
+
+function sendTelegramCsvReport_(chatId, reportType) {
+  const report = buildCsvReport_(reportType);
+  const blob = Utilities.newBlob(report.csv, 'text/csv', report.filename);
+  sendTelegramDocumentToChat_(chatId, blob, report.caption);
+}
+
+function buildTelegramSummary_() {
+  const records = getRegistrationRecords_();
+  const hospedaje = records.filter(record => isYesValue_(record['Hospedaje'])).length;
+  const confirmados = records.filter(record => normalizeText_(record['Confirmacion asistencia']).includes('si')).length;
+  const noAsisten = records.filter(record => normalizeText_(record['Confirmacion asistencia']).includes('no')).length;
+  const pendientes = records.length - confirmados - noAsisten;
+
+  return [
+    'Resumen Rally por la Luz 2026',
+    `Registros: ${records.length}`,
+    `Hospedaje: ${hospedaje}`,
+    `Si asistiran: ${confirmados}`,
+    `No asistiran: ${noAsisten}`,
+    `Pendientes: ${pendientes}`
+  ].join('\n');
+}
+
+function buildCsvReport_(reportType) {
+  const records = getRegistrationRecords_();
+  const filters = {
+    hospedaje: record => isYesValue_(record['Hospedaje']),
+    confirmados: record => normalizeText_(record['Confirmacion asistencia']).includes('si'),
+    no_asisten: record => normalizeText_(record['Confirmacion asistencia']).includes('no'),
+    pendientes: record => !String(record['Confirmacion asistencia'] || '').trim()
+  };
+  const names = {
+    hospedaje: 'hospedaje',
+    confirmados: 'confirmados',
+    no_asisten: 'no_asisten',
+    pendientes: 'pendientes'
+  };
+  const filter = filters[reportType] || (() => true);
+  const rows = records.filter(filter);
+  const csvHeaders = [
+    'Fecha',
+    'Nombre(s)',
+    'Apellidos',
+    'Correo',
+    'Telefono',
+    'WhatsApp',
+    'Estado',
+    'Institucion',
+    'Hospedaje',
+    'Confirmacion asistencia',
+    'Fecha confirmacion'
+  ];
+  const lines = [csvHeaders.join(',')];
+
+  rows.forEach(record => {
+    const row = csvHeaders.map(header => {
+      if (header === 'WhatsApp') return csvEscape_(createWhatsappUrl_(record['Telefono']));
+      return csvEscape_(record[header]);
+    });
+    lines.push(row.join(','));
+  });
+
+  const name = names[reportType] || 'registros';
+  const date = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd-HHmm');
+
+  return {
+    csv: lines.join('\n'),
+    filename: `rally-2026-${name}-${date}.csv`,
+    caption: `Rally por la Luz 2026: ${name} (${rows.length})`
+  };
+}
+
+function getRegistrationRecords_() {
+  const sheet = getSheet_();
+  ensureHeaders_(sheet);
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return [];
+
+  const headers = getHeaders_(sheet);
+  const values = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues();
+
+  return values.map(row => {
+    const record = {};
+    headers.forEach((header, index) => {
+      record[header] = row[index];
+    });
+    return record;
+  });
+}
+
+function createWhatsappUrl_(phone) {
+  const digits = String(phone || '').replace(/\D/g, '');
+  if (digits.length < 10) return '';
+
+  const localNumber = digits.slice(-10);
+  return `https://wa.me/52${localNumber}`;
+}
+
+function isYesValue_(value) {
+  return normalizeText_(value) === 'si';
+}
+
+function normalizeText_(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+function csvEscape_(value) {
+  let text = value;
+
+  if (Object.prototype.toString.call(value) === '[object Date]' && !isNaN(value)) {
+    text = Utilities.formatDate(value, Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+  }
+
+  text = String(text || '');
+  return `"${text.replace(/"/g, '""')}"`;
 }
 
 function getTelegramConfig_() {
