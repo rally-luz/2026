@@ -45,3 +45,42 @@ El envio del correo automatico al participante se registra en:
 ## Actualizar cambios
 
 Cada vez que cambies `Code.gs` o `Envios.gs`, copia el contenido actualizado en Apps Script y crea una nueva version del despliegue del Web App para que el sitio use el codigo mas reciente.
+
+## Alertas por Telegram
+
+`Code.gs` puede mandar alertas internas a Telegram cuando:
+
+- Se recibe un nuevo registro.
+- Alguien confirma asistencia.
+- Falla el registro.
+- Falla el enlace de asistencia.
+- No se puede enviar el correo de confirmacion al participante.
+
+No guardes el token del bot directamente en GitHub. Configuralo en Apps Script:
+
+1. Abre el proyecto de Apps Script.
+2. Entra a `Project Settings`.
+3. En `Script properties`, agrega:
+
+```text
+TELEGRAM_BOT_TOKEN
+```
+
+con el token del bot.
+
+4. Agrega tambien:
+
+```text
+TELEGRAM_CHAT_ID
+```
+
+con el chat id donde deben llegar las alertas.
+
+5. Guarda.
+6. Ejecuta la funcion:
+
+```js
+probarTelegram()
+```
+
+Si todo esta bien, llegara un mensaje de prueba al chat configurado.

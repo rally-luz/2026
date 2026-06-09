@@ -57,10 +57,25 @@ function doPost(e) {
 
     sendNotification_(data);
     sendParticipantConfirmation_(data, sheet, rowNumber);
+    notifyTelegram_([
+      'Nuevo registro Rally por la Luz 2026',
+      `Nombre: ${data.nombre || ''} ${data.apellidos || ''}`.trim(),
+      `Correo: ${data.email || ''}`,
+      `Telefono: ${data.telefono || ''}`,
+      `Estado: ${data.estado || ''}`,
+      `Institucion: ${data.institucion || ''}`,
+      `Hospedaje: ${data.hospedaje || ''}`,
+      `Fila: ${rowNumber}`
+    ].join('\n'));
 
     return redirect_(THANK_YOU_URL);
 
   } catch (error) {
+    notifyTelegram_([
+      'Error en registro Rally por la Luz 2026',
+      String(error && error.stack ? error.stack : error)
+    ].join('\n'));
+
     MailApp.sendEmail({
       to: NOTIFY_EMAIL,
       subject: 'Error en formulario Rally por la Luz 2026',
@@ -92,13 +107,22 @@ function getPostData_(e) {
 }
 
 function doGet(e) {
-  const params = e && e.parameter ? e.parameter : {};
+  try {
+    const params = e && e.parameter ? e.parameter : {};
 
-  if (params.action === 'asistencia') {
-    return handleAttendanceConfirmation_(params);
+    if (params.action === 'asistencia') {
+      return handleAttendanceConfirmation_(params);
+    }
+
+    return HtmlService.createHtmlOutput('Rally por la Luz 2026');
+  } catch (error) {
+    notifyTelegram_([
+      'Error en enlace de asistencia Rally por la Luz 2026',
+      String(error && error.stack ? error.stack : error)
+    ].join('\n'));
+
+    return HtmlService.createHtmlOutput('No pudimos procesar la solicitud.');
   }
-
-  return HtmlService.createHtmlOutput('Rally por la Luz 2026');
 }
 
 function getSheet_() {
@@ -181,6 +205,11 @@ function handleAttendanceConfirmation_(params) {
 
   sheet.getRange(rowNumber, idxResponse + 1).setValue(response);
   sheet.getRange(rowNumber, idxDate + 1).setValue(new Date());
+  notifyTelegram_([
+    'Confirmacion de asistencia Rally por la Luz 2026',
+    `Respuesta: ${response}`,
+    `Fila: ${rowNumber}`
+  ].join('\n'));
 
   if (response === 'Sí asistiré') {
     return createAttendancePage_(
@@ -280,6 +309,12 @@ function sendParticipantConfirmation_(data, sheet, rowNumber) {
 
   if (!email || !isValidParticipantEmail_(email)) {
     markParticipantEmailStatus_(sheet, rowNumber, 'No enviado', 'Correo inválido');
+    notifyTelegram_([
+      'No se envio correo de confirmacion',
+      'Motivo: correo invalido o vacio',
+      `Correo: ${email}`,
+      `Fila: ${rowNumber}`
+    ].join('\n'));
     return;
   }
 
@@ -324,9 +359,46 @@ function sendParticipantConfirmation_(data, sheet, rowNumber) {
       'Error',
       String(error && error.message ? error.message : error)
     );
+    notifyTelegram_([
+      'Error enviando correo al participante',
+      `Correo: ${email}`,
+      `Fila: ${rowNumber}`,
+      String(error && error.stack ? error.stack : error)
+    ].join('\n'));
 
     throw error;
   }
+}
+
+function probarTelegram() {
+  notifyTelegram_('Prueba Telegram Rally por la Luz 2026: conexion correcta.');
+}
+
+function notifyTelegram_(message) {
+  const config = getTelegramConfig_();
+  if (!config.token || !config.chatId) return;
+
+  try {
+    UrlFetchApp.fetch(`https://api.telegram.org/bot${config.token}/sendMessage`, {
+      method: 'post',
+      muteHttpExceptions: true,
+      payload: {
+        chat_id: config.chatId,
+        text: String(message || '').slice(0, 3900),
+        disable_web_page_preview: true
+      }
+    });
+  } catch (error) {
+    console.warn(`No se pudo enviar alerta Telegram: ${error}`);
+  }
+}
+
+function getTelegramConfig_() {
+  const props = PropertiesService.getScriptProperties();
+  return {
+    token: props.getProperty('TELEGRAM_BOT_TOKEN') || '',
+    chatId: props.getProperty('TELEGRAM_CHAT_ID') || ''
+  };
 }
 
 function markParticipantEmailStatus_(sheet, rowNumber, status, errorMessage) {
