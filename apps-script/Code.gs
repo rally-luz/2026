@@ -425,6 +425,31 @@ function configurarTelegramComandos() {
   return response.getContentText();
 }
 
+function verEstadoTelegramWebhook() {
+  const config = getTelegramConfig_();
+  if (!config.token) throw new Error('Falta TELEGRAM_BOT_TOKEN en Script properties.');
+
+  const response = UrlFetchApp.fetch(`https://api.telegram.org/bot${config.token}/getWebhookInfo`, {
+    method: 'get',
+    muteHttpExceptions: true
+  });
+
+  console.log(response.getContentText());
+  return response.getContentText();
+}
+
+function probarComandoAyudaTelegram() {
+  const config = getTelegramConfig_();
+  if (!config.chatId) throw new Error('Falta TELEGRAM_CHAT_ID en Script properties.');
+
+  handleTelegramUpdate_({
+    message: {
+      text: '/ayuda',
+      chat: { id: config.chatId }
+    }
+  });
+}
+
 function borrarTelegramWebhook() {
   const config = getTelegramConfig_();
   if (!config.token) throw new Error('Falta TELEGRAM_BOT_TOKEN en Script properties.');

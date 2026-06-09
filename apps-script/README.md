@@ -130,3 +130,25 @@ Si necesitas desactivar los comandos del bot, ejecuta:
 ```js
 borrarTelegramWebhook()
 ```
+
+### Diagnostico si el bot no responde
+
+Si escribes `/ayuda` o `/id` y el bot no responde:
+
+1. Verifica que el Web App este desplegado como nueva version despues de copiar el `Code.gs`.
+2. Verifica que el acceso del Web App permita llamadas publicas, por ejemplo `Anyone`.
+3. Ejecuta:
+
+```js
+verEstadoTelegramWebhook()
+```
+
+En el registro de ejecucion debe aparecer la respuesta de Telegram. Si hay un problema, revisa `last_error_message`.
+
+4. Ejecuta:
+
+```js
+probarComandoAyudaTelegram()
+```
+
+Si esta prueba si manda el mensaje de ayuda, el token y el chat id estan bien; el problema esta en el webhook o en el despliegue del Web App.
