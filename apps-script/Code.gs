@@ -387,10 +387,38 @@ function configurarTelegramWebhook() {
   const url = ScriptApp.getService().getUrl();
   if (!url) throw new Error('No se encontro la URL del Web App. Despliega el script primero.');
 
+  configurarTelegramComandos();
+
   const response = UrlFetchApp.fetch(`https://api.telegram.org/bot${config.token}/setWebhook`, {
     method: 'post',
     muteHttpExceptions: true,
     payload: { url }
+  });
+
+  console.log(response.getContentText());
+  return response.getContentText();
+}
+
+function configurarTelegramComandos() {
+  const config = getTelegramConfig_();
+  if (!config.token) throw new Error('Falta TELEGRAM_BOT_TOKEN en Script properties.');
+
+  const commands = [
+    { command: 'ayuda', description: 'Ver comandos disponibles' },
+    { command: 'resumen', description: 'Ver totales rapidos' },
+    { command: 'hospedaje', description: 'CSV de quienes solicitaron hospedaje' },
+    { command: 'confirmados', description: 'CSV de quienes si asistiran' },
+    { command: 'no_asisten', description: 'CSV de quienes no asistiran' },
+    { command: 'pendientes', description: 'CSV sin confirmacion de asistencia' },
+    { command: 'id', description: 'Mostrar chat id' }
+  ];
+
+  const response = UrlFetchApp.fetch(`https://api.telegram.org/bot${config.token}/setMyCommands`, {
+    method: 'post',
+    muteHttpExceptions: true,
+    payload: {
+      commands: JSON.stringify(commands)
+    }
   });
 
   console.log(response.getContentText());

@@ -107,7 +107,13 @@ Despues de desplegar el Web App, ejecuta una vez:
 configurarTelegramWebhook()
 ```
 
-Con eso el bot escuchara comandos. Comandos disponibles:
+Con eso el bot escuchara comandos y Telegram mostrara el menu de comandos disponibles. Si solo quieres actualizar el menu sin tocar el webhook, ejecuta:
+
+```js
+configurarTelegramComandos()
+```
+
+Comandos disponibles:
 
 - `/hospedaje`: envia un CSV con los registros que solicitaron hospedaje.
 - `/confirmados`: envia un CSV con quienes confirmaron que si asistiran.
