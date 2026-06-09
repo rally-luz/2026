@@ -264,13 +264,13 @@ Lee Google Sheets directamente y responde:
 Cuando uses este bot externo, conviene apagar el polling de Telegram dentro de Apps Script:
 
 ```js
-desinstalarTriggerTelegramPolling()
+apagarTelegramAppsScript()
 ```
 
-Tambien puedes borrar cualquier webhook activo:
+Si solo quieres borrar cualquier webhook activo:
 
 ```js
-borrarTelegramWebhook()
+eliminarWebhookTelegram()
 ```
 
 La configuracion completa esta en `telegram-bot/README.md`.

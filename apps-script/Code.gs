@@ -495,6 +495,18 @@ function desinstalarTriggerTelegramPolling() {
   eliminarTriggersTelegramPolling_();
 }
 
+function apagarTelegramAppsScript() {
+  eliminarTriggersTelegramPolling_();
+  PropertiesService.getScriptProperties().deleteProperty('TELEGRAM_LAST_UPDATE_ID');
+
+  try {
+    return borrarTelegramWebhook();
+  } catch (error) {
+    console.warn(`No se pudo borrar webhook: ${error}`);
+    return String(error);
+  }
+}
+
 function revisarTelegramComandos() {
   const config = getTelegramConfig_();
   if (!config.token) throw new Error('Falta TELEGRAM_BOT_TOKEN en Script properties.');
@@ -593,6 +605,10 @@ function borrarTelegramWebhook() {
 
   console.log(response.getContentText());
   return response.getContentText();
+}
+
+function eliminarWebhookTelegram() {
+  return borrarTelegramWebhook();
 }
 
 function notifyTelegram_(message) {

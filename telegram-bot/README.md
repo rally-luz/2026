@@ -73,11 +73,11 @@ Los CSV incluyen columna `WhatsApp`. El enlace usa los ultimos 10 digitos del te
 Si usas este bot externo, desactiva el polling de Telegram en Apps Script ejecutando:
 
 ```js
-desinstalarTriggerTelegramPolling()
+apagarTelegramAppsScript()
 ```
 
-Tambien puedes borrar el webhook si quedo configurado:
+Esa funcion borra el trigger de polling, elimina el marcador de mensajes procesados y borra el webhook. Si solo quieres borrar el webhook:
 
 ```js
-borrarTelegramWebhook()
+eliminarWebhookTelegram()
 ```
