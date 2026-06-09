@@ -132,6 +132,27 @@ Si necesitas desactivar los comandos del bot, ejecuta:
 borrarTelegramWebhook()
 ```
 
+### Alternativa recomendada si el webhook responde 302
+
+Apps Script puede responder a Telegram con `302 Moved Temporarily` por redirecciones internas de Google. Si `verEstadoTelegramWebhook()` muestra ese error, usa polling con trigger:
+
+```js
+instalarTriggerTelegramPolling()
+```
+
+Esa funcion:
+
+- Borra el webhook activo.
+- Configura el menu de comandos.
+- Crea un trigger de tiempo que ejecuta `revisarTelegramComandos()` cada minuto.
+- Procesa los comandos pendientes.
+
+Con polling, el bot puede tardar hasta un minuto en responder. Para apagar este modo:
+
+```js
+desinstalarTriggerTelegramPolling()
+```
+
 ### Diagnostico si el bot no responde
 
 Si escribes `/ayuda` o `/id` y el bot no responde:

@@ -449,6 +449,82 @@ function verEstadoTelegramWebhook() {
   return response.getContentText();
 }
 
+function instalarTriggerTelegramPolling() {
+  const config = getTelegramConfig_();
+  if (!config.token) throw new Error('Falta TELEGRAM_BOT_TOKEN en Script properties.');
+
+  borrarTelegramWebhook();
+  configurarTelegramComandos();
+  eliminarTriggersTelegramPolling_();
+
+  ScriptApp.newTrigger('revisarTelegramComandos')
+    .timeBased()
+    .everyMinutes(1)
+    .create();
+
+  revisarTelegramComandos();
+
+  if (config.chatId) {
+    sendTelegramMessageToChat_(
+      config.chatId,
+      'Polling de Telegram activado. Ya puedo responder comandos como /ayuda, /resumen, /hospedaje y /confirmados.'
+    );
+  }
+}
+
+function desinstalarTriggerTelegramPolling() {
+  eliminarTriggersTelegramPolling_();
+}
+
+function revisarTelegramComandos() {
+  const config = getTelegramConfig_();
+  if (!config.token) throw new Error('Falta TELEGRAM_BOT_TOKEN en Script properties.');
+
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(25000)) return;
+
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const lastUpdateId = Number(props.getProperty('TELEGRAM_LAST_UPDATE_ID') || 0);
+    const response = UrlFetchApp.fetch(`https://api.telegram.org/bot${config.token}/getUpdates`, {
+      method: 'post',
+      muteHttpExceptions: true,
+      payload: {
+        offset: lastUpdateId + 1,
+        timeout: 0,
+        allowed_updates: JSON.stringify(['message', 'edited_message'])
+      }
+    });
+    const result = JSON.parse(response.getContentText() || '{}');
+
+    if (!result.ok) {
+      console.warn(response.getContentText());
+      return;
+    }
+
+    let maxUpdateId = lastUpdateId;
+
+    (result.result || []).forEach(update => {
+      if (typeof update.update_id === 'number') {
+        maxUpdateId = Math.max(maxUpdateId, update.update_id);
+      }
+      handleTelegramUpdate_(update);
+    });
+
+    if (maxUpdateId > lastUpdateId) {
+      props.setProperty('TELEGRAM_LAST_UPDATE_ID', String(maxUpdateId));
+    }
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function eliminarTriggersTelegramPolling_() {
+  ScriptApp.getProjectTriggers()
+    .filter(trigger => trigger.getHandlerFunction() === 'revisarTelegramComandos')
+    .forEach(trigger => ScriptApp.deleteTrigger(trigger));
+}
+
 function probarComandoAyudaTelegram() {
   const config = getTelegramConfig_();
   if (!config.chatId) throw new Error('Falta TELEGRAM_CHAT_ID en Script properties.');
