@@ -384,7 +384,7 @@ function configurarTelegramWebhook() {
   const config = getTelegramConfig_();
   if (!config.token) throw new Error('Falta TELEGRAM_BOT_TOKEN en Script properties.');
 
-  const url = ScriptApp.getService().getUrl();
+  const url = getTelegramWebhookUrl_();
   if (!url) throw new Error('No se encontro la URL del Web App. Despliega el script primero.');
 
   configurarTelegramComandos();
@@ -397,6 +397,17 @@ function configurarTelegramWebhook() {
 
   console.log(response.getContentText());
   return response.getContentText();
+}
+
+function getTelegramWebhookUrl_() {
+  const props = PropertiesService.getScriptProperties();
+  const configuredUrl = String(props.getProperty('TELEGRAM_WEBAPP_URL') || '').trim();
+  if (configuredUrl) return configuredUrl;
+
+  const serviceUrl = ScriptApp.getService().getUrl();
+  if (!serviceUrl) return '';
+
+  return serviceUrl.replace(/\/dev(\?.*)?$/, '/exec$1');
 }
 
 function configurarTelegramComandos() {

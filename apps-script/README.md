@@ -92,6 +92,7 @@ Tambien puedes usar el bot para pedir reportes desde Telegram. Primero configura
 ```text
 TELEGRAM_BOT_TOKEN
 TELEGRAM_CHAT_ID
+TELEGRAM_WEBAPP_URL
 ```
 
 Para obtener el `TELEGRAM_CHAT_ID`:
@@ -137,7 +138,8 @@ Si escribes `/ayuda` o `/id` y el bot no responde:
 
 1. Verifica que el Web App este desplegado como nueva version despues de copiar el `Code.gs`.
 2. Verifica que el acceso del Web App permita llamadas publicas, por ejemplo `Anyone`.
-3. Ejecuta:
+3. En `Script properties`, guarda `TELEGRAM_WEBAPP_URL` con la URL publica del despliegue, la que termina en `/exec`, no la que termina en `/dev`.
+4. Ejecuta:
 
 ```js
 verEstadoTelegramWebhook()
@@ -145,7 +147,7 @@ verEstadoTelegramWebhook()
 
 En el registro de ejecucion debe aparecer la respuesta de Telegram. Si hay un problema, revisa `last_error_message`.
 
-4. Ejecuta:
+5. Ejecuta:
 
 ```js
 probarComandoAyudaTelegram()
