@@ -241,7 +241,41 @@ Cada vez que se modifiquen `Code.gs` o `Envios.gs` en este repo:
 
 Si no se crea nueva version, el formulario puede seguir usando codigo viejo.
 
-## 11. Que hace `Code.gs`
+## 11. Bot de Telegram externo
+
+Si los comandos de Telegram desde Apps Script fallan por webhooks, redirecciones o triggers, se puede correr un bot Node.js en una PC/servidor propio.
+
+El bot esta en:
+
+```text
+telegram-bot/
+```
+
+Lee Google Sheets directamente y responde:
+
+- `/ayuda`
+- `/resumen`
+- `/hospedaje`
+- `/confirmados`
+- `/no_asisten`
+- `/pendientes`
+- `/id`
+
+Cuando uses este bot externo, conviene apagar el polling de Telegram dentro de Apps Script:
+
+```js
+desinstalarTriggerTelegramPolling()
+```
+
+Tambien puedes borrar cualquier webhook activo:
+
+```js
+borrarTelegramWebhook()
+```
+
+La configuracion completa esta en `telegram-bot/README.md`.
+
+## 12. Que hace `Code.gs`
 
 `Code.gs` corre automaticamente cuando alguien usa el formulario.
 
@@ -280,7 +314,7 @@ Correo confirmacion
 Error correo confirmacion
 ```
 
-## 12. Que hace `Envios.gs`
+## 13. Que hace `Envios.gs`
 
 `Envios.gs` se ejecuta manualmente desde Apps Script. No manda todo junto: cada funcion es independiente.
 
@@ -389,7 +423,7 @@ escapeHtml_(value)
 
 Escapa texto antes de insertarlo en HTML para evitar romper el correo si algun nombre contiene caracteres especiales.
 
-## 13. Triggers
+## 14. Triggers
 
 No se necesita trigger para:
 
@@ -407,7 +441,7 @@ Solo usar triggers si se quiere programar algo automatico, por ejemplo:
 
 Si los avisos se mandan manualmente desde Apps Script, no hace falta trigger.
 
-## 14. Abrir y cerrar registro
+## 15. Abrir y cerrar registro
 
 El sitio publicado siempre es:
 
@@ -441,7 +475,7 @@ En WSL/Linux:
 ./registro.sh cerrado publicar
 ```
 
-## 15. Publicar cambios del sitio
+## 16. Publicar cambios del sitio
 
 Flujo normal:
 
@@ -461,7 +495,7 @@ git push
 
 No usar `git reset --hard` a menos que se sepa exactamente que se quiere borrar.
 
-## 16. Probar el formulario
+## 17. Probar el formulario
 
 1. Abrir:
 
@@ -485,7 +519,7 @@ Si solo llega correo al organizador pero no al participante:
 3. Revisar spam/promociones del participante.
 4. Revisar `Error correo confirmacion` en Sheets.
 
-## 17. Probar correos masivos
+## 18. Probar correos masivos
 
 Antes de enviar a todos:
 
@@ -502,7 +536,7 @@ enviarRecordatorioATodos()
 enviarConfirmacionAsistenciaATodos()
 ```
 
-## 18. Cambiar datos para una nueva edicion
+## 19. Cambiar datos para una nueva edicion
 
 Para crear otra edicion, por ejemplo 2027:
 
@@ -522,7 +556,7 @@ formulario_rally_por_la_luz_2027.html
 9. Activar GitHub Pages.
 10. Probar registro.
 
-## 19. Correos y contacto
+## 20. Correos y contacto
 
 Correo de contacto publico:
 
@@ -546,7 +580,7 @@ Si cambia alguno, actualizar:
 - `index_cerrado.html`
 - `gracias.html`
 
-## 20. Notas importantes
+## 21. Notas importantes
 
 - No poner contrasenas ni tokens privados en el repo.
 - La URL `/exec` de Apps Script puede estar en el HTML.

@@ -1,0 +1,5 @@
+.env
+*.local
+node_modules/
+telegram-bot/service-account.json
+telegram-bot/*.credentials.json

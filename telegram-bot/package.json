@@ -1,0 +1,14 @@
+{
+  "name": "rally-luz-telegram-bot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bot de Telegram para reportes del Rally por la Luz 2026",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "googleapis": "^144.0.0"
+  }
+}
