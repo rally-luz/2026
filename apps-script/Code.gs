@@ -466,6 +466,7 @@ function instalarTriggerTelegramPolling() {
   borrarTelegramWebhook();
   configurarTelegramComandos();
   eliminarTriggersTelegramPolling_();
+  descartarTelegramPendientes_();
 
   ScriptApp.newTrigger('revisarTelegramComandos')
     .timeBased()
@@ -480,6 +481,14 @@ function instalarTriggerTelegramPolling() {
       'Polling de Telegram activado. Ya puedo responder comandos como /ayuda, /resumen, /hospedaje y /confirmados.'
     );
   }
+}
+
+function reiniciarTelegramPollingDesdeAhora() {
+  descartarTelegramPendientes_();
+  sendTelegramMessageToChat_(
+    getTelegramConfig_().chatId,
+    'Listo. Ya descarte los comandos anteriores y empezare a responder solo mensajes nuevos.'
+  );
 }
 
 function desinstalarTriggerTelegramPolling() {
@@ -512,20 +521,46 @@ function revisarTelegramComandos() {
       return;
     }
 
-    let maxUpdateId = lastUpdateId;
-
     (result.result || []).forEach(update => {
       if (typeof update.update_id === 'number') {
-        maxUpdateId = Math.max(maxUpdateId, update.update_id);
+        props.setProperty('TELEGRAM_LAST_UPDATE_ID', String(update.update_id));
       }
-      handleTelegramUpdate_(update);
-    });
 
-    if (maxUpdateId > lastUpdateId) {
-      props.setProperty('TELEGRAM_LAST_UPDATE_ID', String(maxUpdateId));
-    }
+      try {
+        handleTelegramUpdate_(update);
+      } catch (error) {
+        notifyTelegram_([
+          'Error procesando comando de Telegram',
+          `Update: ${update.update_id || ''}`,
+          String(error && error.stack ? error.stack : error)
+        ].join('\n'));
+      }
+    });
   } finally {
     lock.releaseLock();
+  }
+}
+
+function descartarTelegramPendientes_() {
+  const config = getTelegramConfig_();
+  if (!config.token) throw new Error('Falta TELEGRAM_BOT_TOKEN en Script properties.');
+
+  const response = UrlFetchApp.fetch(`https://api.telegram.org/bot${config.token}/getUpdates`, {
+    method: 'post',
+    muteHttpExceptions: true,
+    payload: {
+      timeout: 0,
+      allowed_updates: JSON.stringify(['message', 'edited_message'])
+    }
+  });
+  const result = JSON.parse(response.getContentText() || '{}');
+  const updates = result.ok ? (result.result || []) : [];
+  const maxUpdateId = updates.reduce((max, update) => {
+    return typeof update.update_id === 'number' ? Math.max(max, update.update_id) : max;
+  }, Number(PropertiesService.getScriptProperties().getProperty('TELEGRAM_LAST_UPDATE_ID') || 0));
+
+  if (maxUpdateId > 0) {
+    PropertiesService.getScriptProperties().setProperty('TELEGRAM_LAST_UPDATE_ID', String(maxUpdateId));
   }
 }
 

@@ -158,6 +158,14 @@ Con polling, el bot puede tardar hasta un minuto en responder. Para apagar este 
 desinstalarTriggerTelegramPolling()
 ```
 
+Si el bot empieza a responder comandos viejos repetidamente, ejecuta:
+
+```js
+reiniciarTelegramPollingDesdeAhora()
+```
+
+Eso descarta los mensajes pendientes y deja el bot escuchando solo comandos nuevos.
+
 ### Diagnostico si el bot no responde
 
 Si escribes `/ayuda` o `/id` y el bot no responde:
