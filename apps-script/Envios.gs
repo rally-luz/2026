@@ -4,11 +4,7 @@ const MASS_BCC_BATCH_SIZE = 80;
 const MASS_BATCH_DELAY_MS = 1200;
 const MASS_SENDER_NAME = 'Rally por la Luz 2026';
 
-const WEB_APP_URL =
-  'https://script.google.com/macros/s/AKfycbzaGEFpN2IGYZ04T9NKQMknfuslO-0QrsAyGrmnu01vJIsr_fSiGD_KuxKr5VG4Rdax/exec';
-
-const CONTACT_EMAIL =
-  'rallyxlaluz@inaoe.mx';
+const CONTACT_EMAIL = 'rallyxlaluz@inaoe.mx';
 
 const CONFIRM_YES_URL =
   'https://rally-luz.github.io/2026/asistencia-si.html';
@@ -71,7 +67,7 @@ function enviarRecordatorioATodos() {
     'Te recordamos la información principal del Rally por la Luz 2026.',
     '',
     'Sede: INAOE, Tonantzintla, Puebla',
-    'Fechas: 29 y 30 de septiembre',
+    'Fechas: 21 y 22 de septiembre',
     'Modalidad: presencial',
     '',
     'Recomendaciones:',
@@ -84,18 +80,22 @@ function enviarRecordatorioATodos() {
     'Comité Organizador - Rally por la Luz 2026'
   ].join('\n');
 
-  const htmlBody = crearHtmlAviso_({
+  const htmlBody = crearHtmlAviso2026_({
     titulo: 'Recordatorio del evento',
-    subtitulo: 'Rally por la Luz 2026',
     intro: 'Te compartimos la información principal para tu participación.',
     bloques: [
       { etiqueta: 'Sede', valor: 'INAOE, Tonantzintla, Puebla' },
-      { etiqueta: 'Fechas', valor: '29 y 30 de septiembre' },
+      { etiqueta: 'Fechas', valor: '21 y 22 de septiembre' },
       { etiqueta: 'Modalidad', valor: 'Presencial' }
     ],
     nota: 'Trae ropa y calzado cómodos, agua o botella reutilizable y protección solar.',
-    cta: 'Ver detalles del evento',
-    url: EVENT_URL
+    botones: [
+      {
+        texto: 'Ver detalles del evento',
+        url: EVENT_URL,
+        primario: true
+      }
+    ]
   });
 
   enviarMasivo_({ subject, textBody, htmlBody });
@@ -116,14 +116,18 @@ function enviarAvisoATodos() {
     'Comité Organizador - Rally por la Luz 2026'
   ].join('\n');
 
-  const htmlBody = crearHtmlAviso_({
+  const htmlBody = crearHtmlAviso2026_({
     titulo: 'Aviso importante',
-    subtitulo: 'Rally por la Luz 2026',
     intro: 'Escribe aquí el contenido del aviso para los participantes.',
     bloques: [],
     nota: `Para cualquier duda, responde este correo o escribe a ${CONTACT_EMAIL}.`,
-    cta: 'Ver sitio del evento',
-    url: EVENT_URL
+    botones: [
+      {
+        texto: 'Ver sitio del evento',
+        url: EVENT_URL,
+        primario: true
+      }
+    ]
   });
 
   enviarMasivo_({ subject, textBody, htmlBody });
@@ -240,83 +244,103 @@ function cargarParticipantesConToken_() {
   return participantes;
 }
 
-function crearHtmlAviso_({ titulo, subtitulo, intro, bloques, nota, cta, url }) {
+function crearHtmlConfirmacionAsistencia_(participante, yesUrl, noUrl) {
+  const nombre = participante.nombre ? ` ${escapeHtml_(participante.nombre)}` : '';
+
+  return crearHtmlAviso2026_({
+    titulo: 'Confirma tu asistencia',
+    intro: `Hola${nombre}, para manejar mejor la logística del evento, por favor confirma si asistirás o si no podrás asistir.`,
+    bloques: [
+      { etiqueta: 'Sede', valor: 'INAOE, Tonantzintla, Puebla' },
+      { etiqueta: 'Fechas', valor: '21 y 22 de septiembre' },
+      { etiqueta: 'Modalidad', valor: 'Presencial' }
+    ],
+    nota: 'Tu respuesta nos ayuda muchísimo a preparar accesos, materiales y cupos.',
+    botones: [
+      {
+        texto: 'Sí asistiré',
+        url: yesUrl,
+        primario: true
+      },
+      {
+        texto: 'No asistiré',
+        url: noUrl,
+        primario: false
+      }
+    ]
+  });
+}
+
+function crearHtmlAviso2026_({ titulo, intro, bloques, nota, botones }) {
   const bloquesHtml = (bloques || []).map(bloque => `
     <div style="padding:14px;border:1px solid #d8e2ea;border-radius:8px;background:#ffffff;">
-      <div style="color:#657486;font-size:13px;font-weight:700;">
+      <div style="color:#657486;font-size:13px;font-weight:800;text-transform:uppercase;">
         ${escapeHtml_(bloque.etiqueta)}
       </div>
-      <div style="margin-top:6px;color:#10243f;font-size:16px;font-weight:800;">
+      <div style="margin-top:6px;color:#10243f;font-size:16px;font-weight:850;">
         ${escapeHtml_(bloque.valor)}
       </div>
     </div>
   `).join('');
 
+  const botonesHtml = (botones || []).length
+    ? `
+      <div style="text-align:center;margin:26px 0 8px;">
+        ${botones.map(boton => {
+          const style = boton.primario
+            ? 'display:inline-block;background:linear-gradient(90deg,#00a99d,#10243f);border-radius:8px;padding:14px 20px;color:#ffffff;text-decoration:none;font-weight:850;font-size:15px;box-shadow:0 14px 28px rgba(0,169,157,.25);margin:6px;'
+            : 'display:inline-block;background:#fff0ef;border:1px solid #ef6f6c;border-radius:8px;padding:14px 20px;color:#8d302f;text-decoration:none;font-weight:850;font-size:15px;margin:6px;';
+          return `<a href="${boton.url}" target="_blank" style="${style}">${escapeHtml_(boton.texto)}</a>`;
+        }).join('')}
+      </div>
+    `
+    : '';
+
   return `
-    <div style="background:#fbfaf7;padding:24px 0;margin:0;">
-      <div style="max-width:640px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;color:#203040;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #d8e2ea;">
-        <div style="background:linear-gradient(135deg,#10243f,#00a99d);padding:24px;color:#ffffff;">
-          <div style="font-size:13px;font-weight:800;text-transform:uppercase;">
-            ${escapeHtml_(subtitulo)}
+    <div style="margin:0;padding:28px 0;background:#fbfaf7;font-family:Arial,Helvetica,sans-serif;color:#203040;">
+      <div style="max-width:680px;margin:0 auto;background:#ffffff;border:1px solid rgba(16,36,63,.12);border-radius:8px;overflow:hidden;box-shadow:0 24px 60px rgba(16,36,63,.14);">
+
+        <div style="background:linear-gradient(160deg,rgba(239,111,108,.75),transparent 34%),linear-gradient(20deg,rgba(0,169,157,.8),transparent 42%),linear-gradient(135deg,#10243f,#163b63);padding:34px;color:#ffffff;">
+          <div style="display:inline-block;padding:8px 12px;border:1px solid rgba(255,255,255,.35);border-radius:999px;background:rgba(255,255,255,.12);font-size:13px;font-weight:800;text-transform:uppercase;">
+            Edición 2026
           </div>
-          <h1 style="margin:8px 0 0;font-size:26px;color:#ffffff;">
+
+          <h1 style="margin:22px 0 12px;color:#ffffff;font-size:38px;line-height:1.05;">
             ${escapeHtml_(titulo)}
           </h1>
+
+          <p style="margin:0;color:rgba(255,255,255,.84);font-size:16px;line-height:1.55;">
+            Rally por la Luz 2026
+          </p>
         </div>
-        <div style="padding:24px;">
-          <p style="font-size:16px;line-height:1.6;">Hola,</p>
-          <p style="font-size:16px;line-height:1.6;">${escapeHtml_(intro)}</p>
-          <div style="display:grid;gap:12px;margin:18px 0;">${bloquesHtml}</div>
+
+        <div style="padding:34px;">
+          <p style="margin:0 0 20px;color:#203040;font-size:16px;line-height:1.6;">
+            ${intro}
+          </p>
+
+          <div style="display:grid;gap:12px;margin:18px 0;">
+            ${bloquesHtml}
+          </div>
+
           <div style="margin:18px 0;padding:14px;border-left:4px solid #f6c85f;border-radius:8px;background:#fff8e5;color:#765a12;font-size:14px;line-height:1.5;">
             ${escapeHtml_(nota)}
           </div>
-          <div style="text-align:center;margin:24px 0 8px;">
-            <a href="${escapeHtml_(url)}" target="_blank" style="display:inline-block;background:linear-gradient(90deg,#00a99d,#10243f);border-radius:8px;padding:13px 18px;color:#ffffff;text-decoration:none;font-weight:800;">
-              ${escapeHtml_(cta)}
-            </a>
-          </div>
-          <p style="font-size:16px;line-height:1.6;">
-            Comité Organizador - Rally por la Luz 2026
+
+          ${botonesHtml}
+
+          <p style="margin:22px 0 0;color:#203040;font-size:16px;line-height:1.6;">
+            Para cualquier duda puedes escribir a <strong>${CONTACT_EMAIL}</strong>.
           </p>
-        </div>
-      </div>
-    </div>
-  `;
-}
 
-function crearHtmlConfirmacionAsistencia_(participante, yesUrl, noUrl) {
-  const nombre = participante.nombre ? ` ${escapeHtml_(participante.nombre)}` : '';
-
-  return `
-    <div style="background:#fbfaf7;padding:24px 0;margin:0;">
-      <div style="max-width:640px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;color:#203040;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #d8e2ea;">
-        <div style="background:linear-gradient(135deg,#10243f,#00a99d);padding:24px;color:#ffffff;">
-          <div style="font-size:13px;font-weight:800;text-transform:uppercase;">
+          <p style="margin:28px 0 0;color:#203040;font-size:16px;line-height:1.6;">
+            Comité Organizador<br>
             Rally por la Luz 2026
-          </div>
-          <h1 style="margin:8px 0 0;font-size:26px;color:#ffffff;">
-            Confirma tu asistencia
-          </h1>
+          </p>
         </div>
-        <div style="padding:24px;">
-          <p style="font-size:16px;line-height:1.6;">Hola${nombre},</p>
-          <p style="font-size:16px;line-height:1.6;">
-            Para manejar mejor la logística del evento, por favor confirma si asistirás o si no podrás asistir.
-          </p>
-          <div style="text-align:center;margin:24px 0 10px;">
-            <a href="${yesUrl}" target="_blank" style="display:inline-block;margin:6px;background:#00a99d;border-radius:8px;padding:13px 18px;color:#ffffff;text-decoration:none;font-weight:800;">
-              Sí asistiré
-            </a>
-            <a href="${noUrl}" target="_blank" style="display:inline-block;margin:6px;background:#fff0ef;border:1px solid #ef6f6c;border-radius:8px;padding:13px 18px;color:#8d302f;text-decoration:none;font-weight:800;">
-              No asistiré
-            </a>
-          </div>
-          <p style="font-size:16px;line-height:1.6;">
-            Para cualquier duda puedes escribir a ${CONTACT_EMAIL}.
-          </p>
-          <p style="font-size:16px;line-height:1.6;">
-            Comité Organizador - Rally por la Luz 2026
-          </p>
+
+        <div style="background:#f3f4f6;color:#657486;text-align:center;font-size:12px;padding:12px;">
+          Rally por la Luz - INAOE
         </div>
       </div>
     </div>

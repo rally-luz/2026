@@ -8,6 +8,9 @@ const THANK_YOU_URL =
 const EVENT_URL =
   'https://ccc.inaoep.mx/~seminario-biomedicas/RallyXLu.html';
 
+const GOOGLE_CALENDAR_URL =
+  'https://calendar.google.com/calendar/render?action=TEMPLATE&text=Rally%20por%20la%20Luz%202026&dates=20260921T150000Z/20260922T230000Z&details=Rally%20por%20la%20Luz%202026%20en%20INAOE.%20Experiencia%20presencial%20de%20biofot%C3%B3nica%2C%20retos%20colaborativos%20y%20aprendizaje%20aplicado.&location=INAOE%2C%20Tonantzintla%2C%20Puebla';
+
 const REGISTRATION_HEADERS = [
   'Fecha',
   'Nombre(s)',
@@ -233,8 +236,12 @@ function createAttendancePage_(title, message) {
             </p>
 
             <div style="text-align:center;margin-top:34px;">
-              <a href="${EVENT_URL}" target="_blank" style="display:inline-block;background:linear-gradient(90deg,#00a99d,#10243f);color:#ffffff;text-decoration:none;padding:15px 24px;border-radius:8px;font-weight:850;font-size:15px;box-shadow:0 14px 28px rgba(0,169,157,.25);">
+              <a href="${EVENT_URL}" target="_blank" style="display:inline-block;background:linear-gradient(90deg,#00a99d,#10243f);color:#ffffff;text-decoration:none;padding:15px 24px;border-radius:8px;font-weight:850;font-size:15px;box-shadow:0 14px 28px rgba(0,169,157,.25);margin:6px;">
                 Volver al sitio del evento
+              </a>
+
+              <a href="${GOOGLE_CALENDAR_URL}" target="_blank" style="display:inline-block;background:#ffffff;border:1px solid #10243f;color:#10243f;text-decoration:none;padding:15px 24px;border-radius:8px;font-weight:850;font-size:15px;margin:6px;">
+                Agregar a Google Calendar
               </a>
             </div>
           </section>
@@ -284,12 +291,13 @@ function sendParticipantConfirmation_(data, sheet, rowNumber) {
     'Tu registro fue recibido correctamente.',
     '',
     'Sede: INAOE, Tonantzintla, Puebla',
-    'Fechas: 29 y 30 de septiembre',
+    'Fechas: 21 y 22 de septiembre',
     'Modalidad: presencial',
     '',
     'Más adelante te enviaremos información adicional.',
     '',
     `Sitio del evento: ${EVENT_URL}`,
+    `Google Calendar: ${GOOGLE_CALENDAR_URL}`,
     '',
     `Dudas: ${REPLY_TO_EMAIL}`,
     '',
@@ -363,8 +371,7 @@ function createOrganizerHtml_(data) {
         ${rows}
       </table>
     `,
-    buttonText: '',
-    buttonUrl: ''
+    buttons: []
   });
 }
 
@@ -378,7 +385,7 @@ function createParticipantHtml_(data) {
       <div style="display:grid;gap:12px;margin:18px 0;">
         <div style="padding:14px;border:1px solid #d8e2ea;border-radius:8px;background:#ffffff;">
           <div style="color:#657486;font-size:13px;font-weight:800;text-transform:uppercase;">Fechas</div>
-          <div style="margin-top:6px;color:#10243f;font-size:16px;font-weight:850;">29 y 30 de septiembre</div>
+          <div style="margin-top:6px;color:#10243f;font-size:16px;font-weight:850;">21 y 22 de septiembre</div>
         </div>
 
         <div style="padding:14px;border:1px solid #d8e2ea;border-radius:8px;background:#ffffff;">
@@ -400,18 +407,31 @@ function createParticipantHtml_(data) {
         Para cualquier duda puedes responder este correo o escribir a <strong>${REPLY_TO_EMAIL}</strong>.
       </p>
     `,
-    buttonText: 'Ver sitio del evento',
-    buttonUrl: EVENT_URL
+    buttons: [
+      {
+        text: 'Ver sitio del evento',
+        url: EVENT_URL,
+        primary: true
+      },
+      {
+        text: 'Agregar a Google Calendar',
+        url: GOOGLE_CALENDAR_URL,
+        primary: false
+      }
+    ]
   });
 }
 
-function createEmailShell2026_({ title, intro, content, buttonText, buttonUrl }) {
-  const buttonHtml = buttonText && buttonUrl
+function createEmailShell2026_({ title, intro, content, buttons }) {
+  const buttonsHtml = (buttons || []).length
     ? `
       <div style="text-align:center;margin:26px 0 8px;">
-        <a href="${buttonUrl}" target="_blank" style="display:inline-block;background:linear-gradient(90deg,#00a99d,#10243f);border-radius:8px;padding:14px 20px;color:#ffffff;text-decoration:none;font-weight:850;font-size:15px;box-shadow:0 14px 28px rgba(0,169,157,.25);">
-          ${escapeEmailHtml_(buttonText)}
-        </a>
+        ${buttons.map(button => {
+          const style = button.primary
+            ? 'display:inline-block;background:linear-gradient(90deg,#00a99d,#10243f);border-radius:8px;padding:14px 20px;color:#ffffff;text-decoration:none;font-weight:850;font-size:15px;box-shadow:0 14px 28px rgba(0,169,157,.25);margin:6px;'
+            : 'display:inline-block;background:#ffffff;border:1px solid #10243f;border-radius:8px;padding:14px 20px;color:#10243f;text-decoration:none;font-weight:850;font-size:15px;margin:6px;';
+          return `<a href="${button.url}" target="_blank" style="${style}">${escapeEmailHtml_(button.text)}</a>`;
+        }).join('')}
       </div>
     `
     : '';
@@ -441,7 +461,7 @@ function createEmailShell2026_({ title, intro, content, buttonText, buttonUrl })
 
           ${content}
 
-          ${buttonHtml}
+          ${buttonsHtml}
 
           <p style="margin:28px 0 0;color:#203040;font-size:16px;line-height:1.6;">
             Comité Organizador<br>
