@@ -42,6 +42,11 @@ El envio del correo automatico al participante se registra en:
 - `Correo confirmacion`
 - `Error correo confirmacion`
 
+## Acentos y caracteres especiales
+
+`Code.gs` repara automaticamente textos que lleguen con codificacion mezclada, por ejemplo `LÃ³pez` se guarda y se muestra como `López`.
+Esto aplica a los datos nuevos del formulario y a los CSV que se generan desde Telegram.
+
 ## Actualizar cambios
 
 Cada vez que cambies `Code.gs` o `Envios.gs`, copia el contenido actualizado en Apps Script y crea una nueva version del despliegue del Web App para que el sitio use el codigo mas reciente.

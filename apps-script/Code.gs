@@ -98,12 +98,12 @@ function getPostData_(e) {
   if (!e) return {};
 
   if (e.parameter && Object.keys(e.parameter).length > 0) {
-    return e.parameter;
+    return repairObjectText_(e.parameter);
   }
 
   if (e.postData && e.postData.contents) {
     try {
-      return JSON.parse(e.postData.contents);
+      return repairObjectText_(JSON.parse(e.postData.contents));
     } catch (error) {
       throw new Error('No se pudo leer el cuerpo POST.');
     }
@@ -156,6 +156,16 @@ function getHeaders_(sheet) {
 
 function buildRow_(sheet, rowData) {
   return getHeaders_(sheet).map(header => rowData[header] || '');
+}
+
+function repairObjectText_(obj) {
+  const repaired = {};
+
+  Object.keys(obj || {}).forEach(key => {
+    repaired[key] = repairMojibakeText_(obj[key]);
+  });
+
+  return repaired;
 }
 
 function handleAttendanceConfirmation_(params) {
@@ -747,7 +757,7 @@ function getRegistrationRecords_() {
   return values.map(row => {
     const record = {};
     headers.forEach((header, index) => {
-      record[header] = row[index];
+      record[header] = repairMojibakeText_(row[index]);
     });
     return record;
   });
@@ -773,6 +783,32 @@ function normalizeText_(value) {
     .replace(/[\u0300-\u036f]/g, '');
 }
 
+function repairMojibakeText_(value) {
+  if (Object.prototype.toString.call(value) === '[object Date]' || typeof value !== 'string') {
+    return value;
+  }
+
+  if (!hasMojibakeMarker_(value)) return value;
+
+  try {
+    return decodeURIComponent(
+      value.split('').map(char => {
+        const code = char.charCodeAt(0);
+        return code <= 255 ? `%${(`0${code.toString(16)}`).slice(-2)}` : encodeURIComponent(char);
+      }).join('')
+    );
+  } catch (error) {
+    return value;
+  }
+}
+
+function hasMojibakeMarker_(value) {
+  return String(value || '').split('').some(char => {
+    const code = char.charCodeAt(0);
+    return code === 0x00c3 || code === 0x00c2 || code === 0x00e2;
+  });
+}
+
 function csvEscape_(value) {
   let text = value;
 
@@ -780,7 +816,7 @@ function csvEscape_(value) {
     text = Utilities.formatDate(value, Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
   }
 
-  text = String(text || '');
+  text = String(repairMojibakeText_(text) || '');
   return `"${text.replace(/"/g, '""')}"`;
 }
 
