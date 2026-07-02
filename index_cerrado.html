@@ -121,6 +121,23 @@
       font-weight:800;
       line-height:1.5;
     }
+    .actions{display:flex; flex-wrap:wrap; align-items:center; gap:14px}
+    .cta-secondary{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:50px;
+      padding:13px 22px;
+      border-radius:8px;
+      border:2px solid var(--ink);
+      background:#fff;
+      color:var(--ink);
+      font-weight:850;
+      text-decoration:none;
+      transition:transform .12s ease, background .12s ease;
+    }
+    .cta-secondary:hover{transform:translateY(-1px); background:#f2f6f9}
+    .cta-secondary:focus{outline:4px solid rgba(246,200,95,.55); outline-offset:3px}
     .contact{color:var(--sub); font-size:14px}
     .contact a{color:var(--ink); font-weight:800}
     footer{max-width:1180px; margin:0 auto; padding:18px; color:var(--sub); font-size:14px}
@@ -137,6 +154,8 @@
     }
     @media (max-width:560px){
       .event-meta,.facts{grid-template-columns:1fr}
+      .actions{align-items:stretch}
+      .cta-secondary{width:100%}
     }
   </style>
 </head>
@@ -187,7 +206,10 @@
 
         <p class="closed">Registro cerrado</p>
 
-        <p class="contact"><a href="https://ccc.inaoep.mx/~seminario-biomedicas/RallyXLu.html" target="_blank" rel="noopener">Mas informacion del evento</a> &middot; Dudas: <a href="mailto:rallyxlaluz@inaoep.mx">rallyxlaluz@inaoep.mx</a></p>
+        <div class="actions">
+          <a class="cta-secondary" href="https://ccc.inaoep.mx/~seminario-biomedicas/RallyXLu.html" target="_blank" rel="noopener">Mas informacion del evento</a>
+          <span class="contact">Dudas: <a href="mailto:rallyxlaluz@inaoep.mx">rallyxlaluz@inaoep.mx</a></span>
+        </div>
       </section>
     </main>
 
