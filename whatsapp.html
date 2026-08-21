@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="light">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="no-referrer">
   <title>Enviar mensaje del Rally</title>
   <style>
     :root{--navy:#10243f;--teal:#00a99d;--paper:#fff;--bg:#fbfaf7;--muted:#657486;--green:#168c46}
@@ -31,9 +33,10 @@
     </section>
   </main>
   <script>
-    const params = new URLSearchParams(location.search);
+    const params = new URLSearchParams(location.hash.slice(1) || location.search);
     const phone = (params.get('phone') || '').replace(/\D/g, '').slice(0, 15);
     const message = (params.get('text') || '').slice(0, 1000);
+    history.replaceState(null, '', location.pathname);
     const status = document.getElementById('status');
     const setStatus = (text, error = false) => { status.textContent = text; status.className = error ? 'error' : ''; };
     document.getElementById('phone').textContent = phone ? `+${phone}` : 'No disponible';
