@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Enviar mensaje del Rally</title>
+  <style>
+    :root{--navy:#10243f;--teal:#00a99d;--paper:#fff;--bg:#fbfaf7;--muted:#657486;--green:#168c46}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--bg);color:var(--navy);font-family:Arial,Helvetica,sans-serif;padding:22px}
+    main{max-width:620px;margin:auto;background:var(--paper);border:1px solid #d8e2ea;border-radius:14px;overflow:hidden;box-shadow:0 24px 60px #10243f20}
+    header{padding:30px;background:linear-gradient(135deg,var(--navy),#17605f);color:#fff}header p{margin:8px 0 0;color:#ffffffd9}
+    section{padding:28px}.data{padding:14px;border:1px solid #d8e2ea;border-radius:10px;background:#f7fafb;margin-bottom:18px;overflow-wrap:anywhere}
+    .actions{display:grid;gap:11px}.button{display:block;width:100%;border:0;border-radius:9px;padding:14px 16px;text-align:center;text-decoration:none;font:inherit;font-weight:800;cursor:pointer}
+    .normal{background:var(--green);color:#fff}.business{background:var(--navy);color:#fff}.copy{background:#fff;color:var(--navy);border:1px solid var(--navy)}
+    #status{min-height:22px;color:var(--muted);text-align:center;margin:16px 0 0}.error{color:#b42318}
+  </style>
+</head>
+<body>
+  <main>
+    <header><h1>Enviar por WhatsApp</h1><p>Elige la aplicación que deseas usar.</p></header>
+    <section>
+      <div class="data"><strong>Número:</strong> <span id="phone"></span></div>
+      <div class="actions" id="actions">
+        <a class="button normal" id="normal">Abrir WhatsApp normal</a>
+        <a class="button business" id="business">Abrir WhatsApp Business</a>
+        <button class="button copy" id="copy-number" type="button">Copiar número</button>
+        <button class="button copy" id="copy-message" type="button">Copiar mensaje</button>
+      </div>
+      <p id="status"></p>
+    </section>
+  </main>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const phone = (params.get('phone') || '').replace(/\D/g, '').slice(0, 15);
+    const message = (params.get('text') || '').slice(0, 1000);
+    const status = document.getElementById('status');
+    const setStatus = (text, error = false) => { status.textContent = text; status.className = error ? 'error' : ''; };
+    document.getElementById('phone').textContent = phone ? `+${phone}` : 'No disponible';
+    if (!phone || !message) {
+      document.getElementById('actions').hidden = true;
+      setStatus('El enlace no contiene un número o mensaje válido.', true);
+    } else {
+      const query = `phone=${phone}&text=${encodeURIComponent(message)}`;
+      const fallback = encodeURIComponent(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`);
+      document.getElementById('normal').href = `intent://send?${query}#Intent;scheme=whatsapp;package=com.whatsapp;S.browser_fallback_url=${fallback};end`;
+      document.getElementById('business').href = `intent://send?${query}#Intent;scheme=whatsapp;package=com.whatsapp.w4b;S.browser_fallback_url=${fallback};end`;
+      const copy = async value => {
+        try { await navigator.clipboard.writeText(value); setStatus('Copiado.'); }
+        catch (_) { setStatus('No se pudo copiar automáticamente.', true); }
+      };
+      document.getElementById('copy-number').onclick = () => copy(`+${phone}`);
+      document.getElementById('copy-message').onclick = () => copy(message);
+    }
+  </script>
+</body>
+</html>
