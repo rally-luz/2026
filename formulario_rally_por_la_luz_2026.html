@@ -89,7 +89,7 @@
     }
     .event-title{margin:22px 0 12px; color:#ffffff; font-size:56px; line-height:.98; letter-spacing:0}
     .event-copy{max-width:28rem; color:rgba(255,255,255,.82); font-size:17px; line-height:1.55}
-    .event-title, .event-copy, .welcome, label, .form-note, #hospedaje-instruction{overflow-wrap:anywhere}
+    .event-title, .event-copy, .welcome, label{overflow-wrap:anywhere}
     .event-meta{display:grid; gap:12px}
     .meta-item{
       display:grid;
@@ -126,17 +126,6 @@
     }
     input::placeholder{color:#9aa7b4}
     select{appearance:auto}
-    .form-note{
-      grid-column:1 / -1;
-      margin:2px 0 0;
-      padding:13px 14px;
-      border-left:4px solid var(--amber);
-      border-radius:var(--radius);
-      background:#fff8e5;
-      color:#765a12;
-      font-size:14px;
-      line-height:1.45;
-    }
     .hint{
       color:var(--sub);
       font-size:12px;
@@ -160,18 +149,6 @@
     button:hover{transform:translateY(-1px); filter:brightness(1.04); box-shadow:0 18px 32px rgba(16,36,63,.24)}
     button:focus-visible{outline:4px solid rgba(246,200,95,.55); outline-offset:3px}
     button[disabled]{cursor:wait; filter:saturate(.75); opacity:.82}
-    #hospedaje-instruction{
-      display:none;
-      grid-column:1 / -1;
-      margin:0;
-      padding:13px 14px;
-      border:1px solid rgba(239,111,108,.28);
-      border-radius:var(--radius);
-      background:#fff0ef;
-      color:#8d302f;
-      line-height:1.45;
-    }
-    #hospedaje-instruction a{color:#7a2524; font-weight:800}
     @media (max-width:820px){
       body{padding:0; background:var(--paper)}
       .page{grid-template-columns:minmax(0,1fr); width:100vw; max-width:100vw; min-height:100vh; border:0; border-radius:0; overflow-x:hidden}
@@ -292,34 +269,12 @@
         <input type="text" id="institucion" name="institucion" autocomplete="organization" required>
       </div>
       
-      <div class="field field-full">
-        <label for="hospedaje">¿Necesita hospedaje?</label>
-        <select id="hospedaje" name="hospedaje" required onchange="mostrarInstruccionHospedaje()">
-          <option value="" disabled selected>Selecciona una opción</option>
-          <option value="No">No</option>
-          <option value="Sí">Sí</option>
-        </select>
-      </div>
-
-      <p class="form-note">El hospedaje aplica únicamente para participantes que vienen de fuera de la ciudad de Puebla y está sujeto a disponibilidad.</p>
-
-      <p id="hospedaje-instruction">
-        Si necesita hospedaje, por favor envíe un correo a 
-        <a href="mailto:anyel.garcia@inaoe.mx">anyel.garcia@inaoe.mx</a> con su solicitud.
-      </p>
-
       <button type="submit">Enviar registro</button>
     </form>
     </section>
   </main>
 
   <script>
-    function mostrarInstruccionHospedaje() {
-      const hospedaje = document.getElementById('hospedaje').value;
-      const instruccion = document.getElementById('hospedaje-instruction');
-      instruccion.style.display = (hospedaje === 'Sí') ? 'block' : 'none';
-    }
-
     const form = document.getElementById('registro-form');
     const submitButton = form.querySelector('button[type="submit"]');
     const thanksUrl = 'gracias.html';
@@ -351,7 +306,6 @@
   </script>
 </body>
 </html>
-
 
 
 
