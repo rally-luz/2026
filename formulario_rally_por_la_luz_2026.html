@@ -221,8 +221,8 @@
 
       <div class="field">
         <label for="telefono">Celular o WhatsApp</label>
-        <input type="tel" id="telefono" name="telefono" inputmode="tel" autocomplete="tel" pattern="[0-9+() -]{10,20}" placeholder="Ejemplo: 2221234567" required>
-        <span class="hint">Puedes escribir 10 digitos o incluir lada, espacios y guiones.</span>
+        <input type="tel" id="telefono" name="telefono" inputmode="numeric" autocomplete="tel" pattern="[0-9]{10}" minlength="10" maxlength="10" placeholder="Ejemplo: 2221234567" title="Escribe un número de 10 dígitos" required>
+        <span class="hint">Escribe tu número celular a 10 dígitos, sin espacios ni guiones.</span>
       </div>
 
       <div class="field field-full">
@@ -306,7 +306,6 @@
   </script>
 </body>
 </html>
-
 
 
 
