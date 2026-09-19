@@ -196,10 +196,10 @@
     </section>
 
     <section class="form-container">
-      <h1>Formulario de registro</h1>
-      <p class="welcome">Completa tus datos para participar en el Rally por la Luz 2026. Recibirás confirmación por correo.</p>
+      <h1>Registro cerrado</h1>
+      <p class="welcome">El registro para el Rally por la Luz 2026 está cerrado. Gracias por tu interés. Si ya te registraste y tienes alguna duda, escribe a <a href="mailto:anyel.garcia@inaoe.mx">anyel.garcia@inaoe.mx</a>.</p>
 
-      <form id="registro-form" action="https://script.google.com/macros/s/AKfycbzaGEFpN2IGYZ04T9NKQMknfuslO-0QrsAyGrmnu01vJIsr_fSiGD_KuxKr5VG4Rdax/exec"
+      <form id="registro-form" hidden
           method="POST"
           accept-charset="UTF-8"
           enctype="application/x-www-form-urlencoded">
@@ -276,35 +276,10 @@
 
   <script>
     const form = document.getElementById('registro-form');
-    const submitButton = form.querySelector('button[type="submit"]');
-    const thanksUrl = 'gracias.html';
-
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
-
-      if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
-      }
-
-      submitButton.disabled = true;
-      submitButton.textContent = 'Enviando...';
-
-      try {
-        await fetch(form.action, {
-          method: 'POST',
-          mode: 'no-cors',
-          body: new URLSearchParams(new FormData(form))
-        });
-        window.location.href = thanksUrl;
-      } catch (error) {
-        submitButton.disabled = false;
-        submitButton.textContent = 'Enviar registro';
-        alert('No se pudo enviar el registro. Intenta de nuevo o escribe a anyel.garcia@inaoe.mx.');
-      }
     });
   </script>
 </body>
 </html>
-
 
